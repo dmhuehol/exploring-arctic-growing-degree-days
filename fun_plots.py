@@ -15,7 +15,7 @@ import cartopy.feature as cfeat
 import cartopy.util as cutil
 import cmasher
 import cmocean
-import cv2
+# import cv2
 from icecream import ic
 from matplotlib import colorbar
 from matplotlib import colormaps
@@ -532,7 +532,12 @@ def apply_params_ts(ppar):
     plt.ylabel(ppar.y_label)
     plt.xlim(ppar.x_lim)
     if ppar.y_lim != 'auto':
-        plt.ylim(ppar.y_lim)
+        if ppar.y_lim == 'fix_nonnegative':
+            y_check = plt.ylim()
+            if y_check[0] < 0:
+                plt.gca().set_ylim(bottom=0)
+        else:
+            plt.ylim(ppar.y_lim)
     try:
         plt.xticks(ppar.xticks)
     except Exception as e:
