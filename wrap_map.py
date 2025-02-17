@@ -1,57 +1,40 @@
-'''wrap_map
-Script to wrap map plotting functions in fun_plots. '''
-
+''' wrap_map
+Open LENS2 data, manage realizations, select slice, and plot map using 
+fun_plots. Written to handle processes manually to facilitate 
+exploratory analysis of an arbitrary variable.
+'''
 import sys
 
-import cartopy
 from icecream import ic
+import matplotlib.cm as mcm
 import matplotlib.pyplot as plt
-import numpy as np
-import xarray as xr
 
+import classes_gddt as cg
 import fun_process as fproc
 import fun_plots as fpl
 
-d_d = {
-    "p": '/Volumes/Polycrystal/Data/LENS2/daily_TREFHT/refined/',
-    "tok": '*antar*.nc',
-    "var": 'TREFHT'
-}
-set_d = { #'all', True to plot all + mean as bonus rlz
-    'yrs': [1850, 2100],
-    'rlz': 'mean',
-    'plot_all': False
-}
-plot_d = {
-    "o_path": '/Users/dhueholt/Documents/gddt_fig/20240509_rlzanomera/',
-    "o_name": 'LENS2_daily2mtemp_Antarctic_' + str(set_d['yrs'][0]) 
-        + str(set_d['yrs'][1]-1) + 'rlz',
-    "figsize": (6, 3), #(5,5) (10,4)
-    "proj": 'Antarctic',
-    "cmap": 'turbo',
-    "cb_bool": True,
-    "cb_vals": [-25, 25],
-    "cb_ticks": [-25, -15, -5, 0, 5, 15, 25],
-    "cb_extent": 'neither',
-    "cb_label": '\u00b0C',
-    "title": 'LENS2: Daily 2m temperature mn ' + str(set_d['yrs'][0]) 
-        + '-' + str(set_d['yrs'][1]),
-    "dpi": 400
-}
-########################################################################
-ds_in = xr.open_mfdataset(
-    d_d['p'] + d_d['tok'], concat_dim='realization', combine='nested', 
-    chunks={'time': 10000}, coords='minimal')
-da_in = ds_in[d_d['var']]
-da_in = da_in.squeeze()
-da_rlz = da_in
-if 'realization' in da_in.dims:
-    da_rlz = fproc.manage_rlz(da_in, set_d)
-da_time = da_rlz.mean(dim='time')
-plot_this = da_time
+dp = cg.DataParams(
+    path='/Users/dhueholt/Documents/gddt_data/LENS2/monthly_SST/AMJJAS/',
+    tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True, 
+    flag_time_slice=True, flag_manage_rlz=True, flag_land_mask=True, 
+    flag_roi=False)
+setp = cg.SetParams(mask_flag='ocean', yrs=[2000, 2010], rlz='mean')
+ppar = cg.PlotParams(
+    cb_bool=True, cb_extent='neither', cb_label='deg C', cb_vals=[-2, 35],
+    cmap=mcm.turbo, dpi=400, figsize=(6, 3), o_bool=True,
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250217_wrapmap/',
+    o_name='LENS2_amjjas-sst_global_' + str(setp.yrs[0]) 
+        + str(setp.yrs[1]-1) + 'rlzmn', proj='EqualEarth180',)
+d_open = fproc.common_opener(dp, setp)
 
-plt.figure()
+#  Define data to plot. Requires hand-tuning for variable of interest.
+da_rlz_mn = d_open['land_mask'].compute()
+da_timerlz_mn = da_rlz_mn.mean(dim='time')
+da_timerlz_mn_celsius = da_timerlz_mn - 273.15
+plot_this = da_timerlz_mn_celsius.squeeze()
+
 plt.rcParams.update({'font.family': 'Catamaran'})
-plt.rcParams.update({'font.weight': 'light'}) #normal, bold, heavy, light, ultrabold, ultralight
+#  'font.weight': normal, bold, heavy, light, ultrabold, ultralight
+plt.rcParams.update({'font.weight': 'light'})
 plt.rcParams.update({'font.size': 12})
-fpl.plot_globe(plot_this, plot_d)
+fpl.plot_globe(plot_this, ppar)
