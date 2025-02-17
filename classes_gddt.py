@@ -45,6 +45,34 @@ class DataParams:
 
 
 
+class GddParams:
+    ''' Collects parameters for growing degree day calculation. 
+    
+    __init__: Initiate an instance of the class with attributes
+    '''
+
+    def __init__(
+            self, base=None, ndd_flag=False, out_flag=False,
+            out_filename=None, out_path=None, out_var_name=None):
+        ''' Constructor for GddParams class
+        
+        Keyword arguments:
+        base: base value for GDD calculation (default: None)
+        ndd_flag: True/False to calculate NaN days (default: False)
+        out_flag: True/False to save output GDD data (default: False)
+        out_filename: filename for output GDD data (default: None)
+        out_path: path to save output GDD data (default: None)
+        out_var_name: variable name in output netCDF (default: None)
+        '''
+        self.base = base
+        self.ndd_flag = ndd_flag
+        self.out_flag = out_flag
+        self.out_filename = out_filename
+        self.out_path = out_path
+        self.out_var_name = out_var_name
+
+
+
 class GuideParams:
     ''' Collects parameters to guide composites.
     

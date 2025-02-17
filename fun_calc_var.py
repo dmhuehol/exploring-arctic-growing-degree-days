@@ -83,20 +83,34 @@ def calc_ransac_reg(x_data, y_data):
     
 #     return temporal_grad
 
-def gdd(da_mntemp, gdd_d):
-    ''' Calculate growing degree days above a base 
-    for an input daily mean temperature DataArray. '''
-    da_daysoi = da_mntemp.where(da_mntemp > gdd_d['base'])
-    da_gdd = da_daysoi - gdd_d['base']
+def gdd(da_mntemp, gddp):
+    ''' Calculate growing degree days above a base for an input daily 
+    mean temperature DataArray. 
+    
+    Arguments:
+    da_mntemp -- DataArray of daily mean temperature
+    gddp -- GddParams instance
+
+    Returns:
+    da_gdd_sum -- annual count of growing degree days
+    '''
+    da_daysoi = da_mntemp.where(da_mntemp > gddp.base)
+    da_gdd = da_daysoi - gddp.base
     gb_gdd = da_gdd.groupby("time.year")
     da_gdd_sum = gb_gdd.sum()
     
     return da_gdd_sum
 
-def ndd(da_mntemp, gdd_d):
-    ''' Calculate number of days with NaNs per year ('
-    NaN degree days') for input daily mean temperature
-    DataArray '''
+def ndd(da_mntemp):
+    ''' Count days with NaNs per year for input daily mean temperature 
+    DataArray.
+
+    Arguments:
+    da_mntemp -- DataArray of daily mean temperature
+
+    Returns:
+    da_ndd_sum -- annual count of NaN days
+    '''
     da_nandays = np.isnan(da_mntemp)
     gb_ndd = da_nandays.groupby("time.year")
     da_ndd_sum = gb_ndd.sum()
