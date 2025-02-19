@@ -2,9 +2,31 @@
 This codebase is primarily intended to support reproducibility of the following manuscript:
  * Hueholt, D.M., E.A. Barnes, J.W. Hurrell, D. Lombardozzi, & A. L. Morrison. "Exploring the Influence of Internal Climate Variability and Forced Change on Arctic Greening" *in prep* for submission to One Earth.
 
-It also supports creation and basic analysis of the dataset of observed growing degree days (GDD) above 50N derived from the Global Historical Climatology Network (GHCN). This purpose may be more broadly useful.
+It also supports creation and basic analysis of datasets of observed growing degree days (GDD) derived from the Global Historical Climatology Network (GHCN). This purpose may be more broadly useful.
 
-# Basic code description
+## Table of Contents
+* [Replicating figures in Hueholt et al. 2025](#replicating-figures-in-hueholt-et-al-2025)  
+* [Workflow to create GDD datasets](#workflow-to-create-gdd-datasets)
+  * [GHCN](#ghcn)  
+  * [CESM](#cesm)  
+* [Code description](#code-description)   
+ 
+## Replicating figures in Hueholt et al. 2025
+To be added.
+
+## Workflow to create GDD datasets
+### GHCN
+1. Download GHCN dataset [from the National Oceanic and Atmospheric Administration National Centers for Environmental Information (NOAA NCEI)](https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily) or [Amazon Web Services](https://registry.opendata.aws/noaa-ghcn/)
+2. Generate a filtered station list with `filter_ghcn` to obtain a subset of interest
+3. Create dataset with GDDs and related information using `calc_gdd_info_ghcn`.
+4. Make span/coverage dataframe with `check_spancover_ghcn`
+5. The GDD dataset and span/coverage dataframe can be used together for plotting and analysis.
+
+### CESM
+1. Obtain daily surface temperature output from desired CESM model simulation (see datasheet for links)
+2. Create dataset with `calc_gdd`
+
+## Code description
 * `cesm_shell`: shell scripts to process and reprocess CESM output before more complex Python-based analysis
 * `ghcn`: code related to importing and manage observed GDDs in the GHCN dataset, as well as dedicated plotting code that only involves GHCN data
 * `run_*`: shell scripts used to submit jobs to HPC systems (Colorado State University [CASHEW](https://www.engr.colostate.edu/ets/cashew-cluster/), National Science Foundation National Center for Atmospheric Research [casper](https://ncar-hpc-docs.readthedocs.io/en/latest/compute-systems/casper/))
