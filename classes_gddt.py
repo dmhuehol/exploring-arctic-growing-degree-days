@@ -45,6 +45,32 @@ class DataParams:
 
 
 
+class FilterParams:
+    ''' Collects parameters for filtering GHCN stations 
+    
+    __init__: Initiate an instance of the class with attributes
+    '''
+
+    def __init__(
+        self, por=1, reg_oi=None, span_type='>', tol='closest', var_oi=[]):
+        ''' Constructor for FilterParams class
+        
+        Keyword arguments:
+        por: period of record in years (default: 1)
+        reg_oi: 'global' or gddt_region_library object (default: None)
+        span_type: '>' or '<' for greater/less than por (default: '>')
+        tol: latlon distance tolerance when point is input, number or
+            'closest' (default: 'closest')
+        var_oi: required variables as str or list of str (default: [])
+        '''
+        self.por = por
+        self.reg_oi = reg_oi
+        self.span_type = span_type
+        self.tol = tol
+        self.var_oi = var_oi
+    
+
+
 class GddParams:
     ''' Collects parameters for growing degree day calculation. 
     
@@ -52,15 +78,15 @@ class GddParams:
     '''
 
     def __init__(
-            self, base=None, ndd_flag=False, out_flag=False,
-            out_filename=None, out_path=None, out_var_name=None):
+            self, base=None, ndd_flag=False, out_filename=None,
+            out_flag=False, out_path=None, out_var_name=None):
         ''' Constructor for GddParams class
         
         Keyword arguments:
         base: base value for GDD calculation (default: None)
         ndd_flag: True/False to calculate NaN days (default: False)
-        out_flag: True/False to save output GDD data (default: False)
         out_filename: filename for output GDD data (default: None)
+        out_flag: True/False to save output GDD data (default: False)
         out_path: path to save output GDD data (default: None)
         out_var_name: variable name in output netCDF (default: None)
         '''

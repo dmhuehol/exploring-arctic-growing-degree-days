@@ -2,11 +2,8 @@
 For input GHCN data files, create dataframe with location metadata,
 span of record, total NaN degree days, and percent coverage. This 
 information must be calculated explicitly from the data as the
-inventory file does not contain coverage data and the years are 
-unreliable (e.g., SF001807220).
-
-Written by Daniel Hueholt
-Graduate Research Assistant at Colorado State University
+station list file does not contain coverage data and the years are 
+unreliable (see e.g., SF001807220).
 '''
 import collections
 from glob import glob

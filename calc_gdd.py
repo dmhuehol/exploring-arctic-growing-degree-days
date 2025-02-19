@@ -4,13 +4,14 @@ base value and save as netCDF.
 
 Configured for the following data types:
 1) Output from the Community Earth System Model (e.g., LENS2)
-2) Station data from the Global Historical Climatology Network (GHCN)
-3) Station data from the Danish Meteorological Institute (DMI)
-4) Reanalysis from the European Reanalysis 5 (ERA5)
+2) Station data from the Danish Meteorological Institute (DMI)
+3) Reanalysis from the European Reanalysis 5 (ERA5)
+GDDs for Global Historical Climatology Network (GHCN) stations 
+calculated in calc_gdd_info_ghcn.
 
-Only 1) and 2) are directly used in the paper this codebase accompanies.
-3) and 4) were part of exploratory analysis and may prove useful again 
-in the future.
+Only 1) is directly used in the paper this codebase accompanies. 2) and 
+3) were part of exploratory analysis and may prove useful again in the 
+future.
 '''
 import glob
 import sys
