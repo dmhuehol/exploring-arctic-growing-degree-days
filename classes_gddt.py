@@ -1,11 +1,8 @@
 ''' classes_gddt
-Custom classes for growing degree days and treeline analysis.
-
-Written by Daniel Hueholt
-Graduate Research Assistant at Colorado State University
+Custom classes for exploring-arctic-growing-degree-days package.
 '''
 
-            
+   
 
 class DataParams:
     ''' Collects parameters to import data. At present, configured for
@@ -26,12 +23,12 @@ class DataParams:
         var: data variable within file (default: '')
         flag_ arguments apply to gridded data using common_opener and 
         have valid inputs True/False/None. All default to None.
-        flag_raw_ds: flag to output raw dataset
-        flag_raw_da: flag to output raw DataArray
-        flag_time_slice: flag to output DataArray isolated by time
-        flag_manage_rlz: flag to output DataArray after rlz operations
-        flag_land_mask: flag to output masked DataArray
-        flag_roi: flag to output specific region of interest
+        flag_raw_ds: output raw dataset
+        flag_raw_da: output raw DataArray
+        flag_time_slice: output DataArray isolated by time
+        flag_manage_rlz: output DataArray after realization management
+        flag_land_mask: output land/ocean masked DataArray
+        flag_roi: output specific region of interest
         '''
         self.path = path
         self.tok = tok
@@ -52,15 +49,15 @@ class FilterParams:
     '''
 
     def __init__(
-        self, por=1, reg_oi=None, span_type='>', tol='closest', var_oi=[]):
+        self, por=None, reg_oi=None, span_type='>', tol='closest', var_oi=[]):
         ''' Constructor for FilterParams class
         
         Keyword arguments:
         por: period of record in years (default: 1)
         reg_oi: 'global' or gddt_region_library object (default: None)
         span_type: '>' or '<' for greater/less than por (default: '>')
-        tol: latlon distance tolerance when point is input, number or
-            'closest' (default: 'closest')
+        tol: latitude/longitude distance tolerance when point is input, 
+            number or 'closest' (default: 'closest')
         var_oi: required variables as str or list of str (default: [])
         '''
         self.por = por
@@ -106,13 +103,15 @@ class GuideParams:
     '''
     
     def __init__(
-        self, cmpst_key='max', guide_by='mean', qoi=0.25):
+        self, cmpst_key='', guide_by='', qoi=None):
         ''' Constructor for GuideParams class 
         
         Keyword arguments:
-        cmpst_key: composite based on keys in dict from guide_by function
-        guide_by: property to classify members
-        qoi: quantile of interest
+        cmpst_key: composite based on keys in dictionary from guide_by 
+            function (default: '')
+        guide_by: property to classify members, see prep_guide in 
+            fun_process for valid options (default: '')
+        qoi: quantile of interest (default: None)
         '''
         self.cmpst_key = cmpst_key
         self.guide_by = guide_by
@@ -126,7 +125,7 @@ class IntervalParams:
     
     __init__: Initiate an instance of the class with attributes
     '''
-    def __init__(self, span=10, strt_yr=1850, end_yr=2100, type='noverlap'):
+    def __init__(self, span=None, strt_yr=None, end_yr=None, type='noverlap'):
         ''' Constructor for IntervalParams class.
                  
         span: Span of interval
@@ -144,18 +143,19 @@ class IntervalParams:
             strt_yr=strt_yr, end_yr=end_yr, spn=span, type=type)
   
     def create_intvls(
-        self, strt_yr=1873, end_yr=2022, spn=30, type='noverlap'):
+        self, strt_yr=None, end_yr=None, spn=None, type='noverlap'):
         ''' Create non-overlapping intervals of length span between 
         given start/end years.
         
         Keyword arguments:
-            strt_yr -- first year of first period (default 1873)
-            end_yr -- last year of last period (default 2022)
-            spn -- span of each period, inclusive (default 30)
-            type -- non-overlapping or rolling (default 'noverlap')
+        strt_yr: first year of first period (default: None)
+        end_yr: last year of last period (default: None)
+        spn: span of each period, inclusive (default: 0)
+        type: non-overlapping ('noverlap') or rolling ('rolling') 
+            intervals (default: 'noverlap')
         
         Returns:
-            l_spns -- list of [strt_yr, end_yr] non-overlapping or rolling
+        l_spns: list of [strt_yr, end_yr] non-overlapping or rolling
         
         Example:
             >>> print(create_intvls(strt_yr=1903, end_yr=2022, spn=30, type='noverlap'))
@@ -178,7 +178,6 @@ class IntervalParams:
     
 
 
-
 class PlotParams:
     ''' Collects parameters for plotting.
     
@@ -191,18 +190,16 @@ class PlotParams:
         cmap=None, coastline_bool=True, color='', color_r='#cccccc', 
         color_comp='#ff4444', comp_hist_bool=False, comp_label='', 
         dpi=400, edgecolors=None, figsize=(10, 4), forced_crossover_bool=False, 
-        frame_flag=False, kde_bool=False, label=None, leg_bool=False, linestyle='--', lw=2,
-        marker_size=8, marker='o', member_crossover_bool=False, mn_bool=False, 
-        o_bool=True, o_name=None, o_path='', o_prefix='', plot_all=False, 
-        proj=None, set_bad=True, stat='count', storyline=False, title=None, title_size=14, 
+        frame_flag=False, kde_bool=False, label=None, leg_bool=False, 
+        linestyle='--', lw=2, marker_size=8, marker='o', 
+        member_crossover_bool=False, mn_bool=False, o_bool=True, o_name=None, 
+        o_path='', o_prefix='', plot_all=False, proj=None, set_bad=True, 
+        stat='count', storyline=False, title=None, title_size=14, 
         ts_type='spaghetti', x_label='', x_lim='auto', xticks='auto', 
-        y_label='', y_lim='auto', yticks='auto',
-        ):
+        y_label='', y_lim='auto', yticks='auto'):
         ''' Constructor for PlotParams class, containing all possible 
-        parameters for all known plots. At present, this includes GHCN 
-        animations (wrap_animate_ghcn_map), GHCN timeseries (plot_ghcn_ts),
-        various globes (plot_globe), spaghetti (plot_timeseries_spaghetti),
-        and histograms (plot_hist).
+        parameters for all plots: animations, histograms, timeseries, 
+        maps.
         
         Keyword arguments:
         alpha: alpha for objects (default: 1)
@@ -221,24 +218,31 @@ class PlotParams:
         cmap: colormap (default: None)
         coastline_bool: true/false plot coastlines (default: True)
         color: a single color to be used for plotting (default: '')
-        color_comp: color for comparison data on hist (default: '#ff4444')
-        color_rlz: a single color for plotting realizations (default: '#cccccc')
-        comp_hist_bool: plot comparison data on histogram (default: False)
+        color_comp: color for comparison data on hist (default: 
+            '#ff4444')
+        color_rlz: a single color for plotting realizations (default: 
+            '#cccccc')
+        comp_hist_bool: plot comparison data on histogram (default: 
+            False)
         comp_label: label for comparison data (default: '')
         dpi: dpi of output image or 'pdf' for pdf (default: 400)
         edgecolors: edgecolor for scatterplot (default: None)
         figsize: figure size (default: (10,4))
-        forced_crossover_bool: true/false forced crossover (default: False)
+        forced_crossover_bool: true/false forced crossover (default: 
+            False)
         frame_flag: true/false plot individual frames (default: True)
-        kde_bool: true/false kernel density estimate on hist (default: False)
+        kde_bool: true/false kernel density estimate on hist (default: 
+            False)
         label: label for legend (default: '')
         leg_bool: true/false to plot legend (default: False)
         linestyle: line style (default: '--')
         lw: linewidth value (default: 2)
         marker_size: marker size for scatterplot (default: 8)
         marker: marker style for scatterplot (default: 'o')
-        member_crossover_bool: true/false member crossover (default: False)
-        mn_bool: true/false plot ensemble mean on timeseries (default: False)
+        member_crossover_bool: true/false member crossover (default: 
+            False)
+        mn_bool: true/false plot ensemble mean on timeseries (default: 
+            False)
         o_bool: true/false save plot (default: True)
         o_name: output name (default: None, often auto later)
         o_path: output path (default: '')
@@ -247,7 +251,8 @@ class PlotParams:
         proj: map projection or set_proj keyword (default: None)
         set_bad: true/false special color for NaN
         stat: statistic for histogram (default: count)
-        storyline: xth percentile or member to plot or False (default: False)
+        storyline: xth percentile or member to plot or False (default: 
+            False)
         title: title for figure (default: None, often auto later)
         title_size: size of title font (default: 14)
         ts_type: 'spread' or 'spaghetti' for timeseries
@@ -347,25 +352,38 @@ class SetParams:
     functions.
     
     __init__: Initiate an instance of the class with attributes
-    '''
-    
+    '''  
     def __init__(
-        self, area_stat=None, base_yrs=1850, beat=4999,
-        dims=['time', 'realization'], effect='cliffs',
-        mask='/Users/dhueholt/Documents/gddt_data/mask/cesm_atm_mask.nc',
-        mask_permafrost='/Users/dhueholt/Documents/gddt_data/LENS2/annual_ALTMAX/', 
-        mask_flag=None, reg_oi='global', rho=51, rlz='all', window=None,
-        yrs=[1850, 1859], yrs_rel_to=[1850, 1859], z_flag=False
-        ):
+        self, area_stat=None, base_yrs=None, beat=None,
+        dims=[], effect='', mask='', mask_flag=None, reg_oi=None, rho=None, 
+        rlz='', window=None, yrs=[], yrs_rel_to=[], z_flag=False):
         ''' Constructor for SetParams class.
         Keyword arguments:
         By default, configured for global data over 1850-1859 relative
         to same period as calculated over time and realizations.
+        area_stat: statistic to use for area ('mean', 'sum', 'pass'; 
+            default: None)
+        base_yrs: baseline year or span of years to compare for effect 
+            size (default: None)
+        beat: beat number for exceedance/crossover (default: None)
+        dims: list of dimensions to calculate statistics (e.g., ['time', 
+            'realization'], default: [])
+        effect: effect size statistic to calculate ('cliffs', 
+            'cliffs_mean', 'robustness', 'gexc', default: '')
+        mask: landmask file path (default: '')
+        mask_flag: str or list for fields to mask on (default: None)
+        reg_oi: 'global' or gddt_region_library object (default: None)
+        rho: threshold for robustness calculation (default: None)
+        rlz: see manage_rlz for valid settings (default: '')
+        window: years for window function (default: None)
+        yrs: year or list of spanning years to select (default: [])
+        yrs_rel_to: year or list of spanning years to select as baseline 
+            to compare relative to (default: [])
+        z_flag: True/False calculate z-statistic (default: False)
         '''
         self.area_stat = area_stat
         self.base_yrs = base_yrs
         self.beat = beat
-        self.mask_permafrost = mask_permafrost
         self.dims = dims
         self.effect = effect
         self.mask = mask
@@ -384,8 +402,7 @@ class SpanCovParams:
     ''' Collects parameters for selecting stations.
     
     __init__: Initiate an instance of the class with attributes
-    '''
-    
+    '''   
     def __init__(self, f='', por=None, cov_thr=None, cov_type='>',):
         ''' Constructor for SpanCovParams class.
         Keyword arguments:
@@ -410,8 +427,7 @@ class TrackProg:
     
     __init__: Initiate an instance of the class with attributes
     message: Message shell about current progress
-    '''
-    
+    '''  
     def __init__(self, cli=None, iter=None, sf=2):
         ''' Constructor for  __init__ class.
         Keyword arguments:
