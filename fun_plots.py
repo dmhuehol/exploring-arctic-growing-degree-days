@@ -300,8 +300,10 @@ def plot_effect_timeseries(to_plt, x_d=None, lera_gm=None, ppar=None):
         plt.plot(x_d, to_plt, lw=ppar.lw, color=ppar.color_r, label=ppar.label)
         ## HARD CODE
         #db9dbe
-        plt.plot(x_d, to_plt[:, 24], lw=0.9, color='#97215C', label=ppar.label)
-        plt.plot(x_d, to_plt[:, 52], lw=0.9, color='#b66363', label=ppar.label)
+        # plt.plot(x_d, to_plt[:, 24], lw=0.9, color='#97215C', label=ppar.label)
+        # plt.plot(x_d, to_plt[:, 52], lw=0.9, color='#b66363', label=ppar.label)
+        plt.plot(x_d, to_plt[:, 11], lw=0.9, color='k', label=ppar.label)
+        plt.plot(x_d, to_plt[:, 52], lw=0.9, color='k', label=ppar.label)
     if ppar.mn_bool:
         to_plt_mn = np.mean(to_plt, axis=1)
         ic(to_plt_mn)
@@ -345,7 +347,10 @@ def plot_effect_timeseries(to_plt, x_d=None, lera_gm=None, ppar=None):
             # ic(str_crossover)
     if ppar.member_crossover_bool:
         cross_thresh = 90
-        all_crossover = to_plt > cross_thresh
+        if cross_thresh == 100:
+            all_crossover = to_plt == cross_thresh
+        else:
+            all_crossover = to_plt > cross_thresh
         member_crossover = list()
         for ac in all_crossover.T:
             try:
@@ -353,7 +358,8 @@ def plot_effect_timeseries(to_plt, x_d=None, lera_gm=None, ppar=None):
             except IndexError:
                 member_crossover.append(np.nan)
         member_crossover = np.array(member_crossover)
-        ic(member_crossover)
+        ic(to_plt)
+        ic(member_crossover, member_crossover[11], member_crossover[52])
 
         if not ppar.storyline:
             mc_10p = np.nanquantile(member_crossover, 0.1)
