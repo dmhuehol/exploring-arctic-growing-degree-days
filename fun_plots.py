@@ -15,7 +15,7 @@ import cartopy.feature as cfeat
 import cartopy.util as cutil
 import cmasher
 import cmocean
-# import cv2
+import cv2
 from icecream import ic
 from matplotlib import colorbar
 from matplotlib import colormaps
