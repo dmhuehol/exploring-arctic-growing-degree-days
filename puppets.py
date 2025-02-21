@@ -1,183 +1,262 @@
 '''puppets
-This contains functions that in a more reasonable world would be their
-own script. In reality, handling them modularly allows them to be
-run with multiple configurations simultaneously. 
-
-Written by Daniel Hueholt
-Graduate Research Assistant at Colorado State University 
+These functions are messier and would be more intuitive as scripts--but 
+handling them modularly allows them to be run with multiple 
+configurations simultaneously using multiprocessing to speed up the 
+generation of large numbers of output figures.
 '''
 from glob import glob
 import sys
 import time
 
 import cftime
-import cmocean as cmo
 from icecream import ic
-import matplotlib.cm as mcm
 import matplotlib.pyplot as plt
 
-import classes_gddt as cg
 import fun_process as fproc
 import fun_plots as fpl
-import gddt_region_library as g_rlib
 
-def composites(
-    dp_gde, setp_gde, dp_cmpst, setp_cmpst, dp_gde_roi_alltimes, ip, gp, 
-    ppar, ppar_reg, ppar_super, ppar_gdd_ts_gray, ppar_gdd_ts,
-    pair_timeseries=True, super_int=30, all_comp=True):
-    l_windows = list()
-    l_panes = list()
-    l_panes_intvl = list()
+def paired_composites_ts(
+    dp_guide=None, setp_guide=None, dp_composite=None, setp_composite=None, 
+    dp_guide_alltimes=None, ip=None, gp=None, ppar=None, ppar_region=None, 
+    ppar_super=None, ppar_guide_ts_all=None, ppar_guide_ts=None,
+    pair_timeseries=True, super_interval=30, avg_all_composites=True):
+    ''' Plot composites of one variable guided by properties of another
+    variable for a list of input intervals, with paired timeseries of 
+    the variable used to guide the composite.
+    Keyword arguments:
+    dp_guide: DataParams for guiding variable
+    setp_guide: SetParams for guiding variable
+    dp_composite: DataParams for composite variable
+    setp_composite: SetParams for composite variable
+    dp_guide_alltimes: DataParams for guide variable in region of 
+        interest used for paired timeseries
+    ip: IntervalParams to make figures
+    gp: GuideParams instance for composite
+    ppar: PlotParams instance for base layer of composite
+    ppar_region: PlotParams instance to annotate region of interest on 
+        top of base layer
+    ppar_super: PlotParams instance for time-average of a list of 
+        composites ("supercomposite")
+    ppar_guide_ts_all: PlotParams instance for base layer of timeseries,
+        the spaghetti of all members and all times
+    ppar_guide_ts: PlotParams instance for second layer of timeseries
+        emphasizing the members and times guiding the composite
+    pair_timeseries: True/False plot paired timeseries (default: True)
+    super_interval: Interval to make supercomposites (default: 30)
+    avg_all_composites: True/False to make supercomposite of all 
+        intervals at end of run (default: True)
+
+    Returns:
+    Returns no variables. Saves combination based on inputs of 
+        1) composite for each interval (always)
+        2) paired timeseries for each interval (if pair_timeseries=True)
+        3) time-averaged supercomposite for each super_interval (as long 
+               as super_interval > number of intervals)
+        4) time-averaged supercomposite for all intervals (if 
+            avg_all_composites=True)
+    '''
+    #  CHECK BEHAVIOR:
+    #      ppar_region.o_bool=False: right now, it seems like this just
+    #          wouldn't produce any output, based on the if with no 
+    #          else? Check on this.
+    l_composites_for_all = list()
+    l_composites_for_super = list()
+    l_intervals_for_super = list()
     total_tic = time.time()
-    for intvlc, intvl in enumerate(ip.intervals):
-        setp_cmpst.yrs_rel_to = intvl
-        setp_cmpst.yrs = intvl
-        setp_gde.yrs = intvl
+    for loop_count, interval in enumerate(ip.intervals):
+        #  For each interval, want to calculate the anomaly relative to
+        #  that interval and guide by GDDs for the same period
+        setp_composite.yrs = interval
+        setp_composite.yrs_rel_to = interval
+        setp_guide.yrs = interval
         tic = time.time()
         #### Set up and guide datasets
-        gde_d = fproc.common_opener(dp=dp_gde, setp=setp_gde)
-        da_gde = gde_d["roi"]
-        gde_all_d = fproc.common_opener(dp=dp_gde_roi_alltimes, setp=setp_gde)
-        da_roi_alltimes = gde_all_d["roi"]
-        cmpst_d = fproc.common_opener(dp=dp_cmpst, setp=setp_cmpst)
-        da_cmpst_raw = cmpst_d["manage_rlz"]
-        da_prep = fproc.prep_guide(da_gde, gp)
-        gde_ind_d = fproc.guide(da_prep, gp)
+        guide_dict = fproc.common_opener(dp=dp_guide, setp=setp_guide)
+        da_guide = guide_dict["roi"]
+        guide_all_dict = fproc.common_opener(
+            dp=dp_guide_alltimes, setp=setp_guide)
+        da_guide_alltimes = guide_all_dict["roi"]
+        composite_dict = fproc.common_opener(
+            dp=dp_composite, setp=setp_composite)
+        da_composite_raw = composite_dict["manage_rlz"]
+        da_prep = fproc.prep_guide(da_guide, gp)
+        #  Indices in guide_indices_dict are used to guide the composite
+        guide_indices_dict = fproc.guide(da_prep, gp)
         #### Anomaly calculation and composite
+        #  Baseline period for composite
         time_slice_base = slice(
-            cftime.DatetimeNoLeap(setp_cmpst.yrs_rel_to[0], 1, 1, 0, 0, 0, 0),
-            cftime.DatetimeNoLeap(setp_cmpst.yrs_rel_to[1], 12, 31, 14, 24, 0, 0)
+            cftime.DatetimeNoLeap(
+                setp_composite.yrs_rel_to[0], 1, 1, 0, 0, 0, 0),
+            cftime.DatetimeNoLeap(
+                setp_composite.yrs_rel_to[1], 12, 31, 14, 24, 0, 0)
         )
-        #  da_base includes all members
-        da_base = cmpst_d["raw_da"].sel(time=time_slice_base)
-        da_anom = fproc.calc_anomaly(da_cmpst_raw, da_base, setp_cmpst)
-        da_anom_tmn = da_anom.mean(dim='time')
-        act_ind = gde_ind_d[gp.cmpst_key]
-        da_cmpst = da_anom_tmn.sel(realization=act_ind)
-        ic(len(act_ind))
+        #  da_base includes all members for best baseline estimate
+        da_base = composite_dict["raw_da"].sel(time=time_slice_base)
+        da_anom = fproc.calc_anomaly(
+            da_composite_raw, da_base, setp_composite)
+        da_anom_time_mn = da_anom.mean(dim='time')
+        loop_guide_indices = guide_indices_dict[gp.composite_key]
+        da_composite = da_anom_time_mn.sel(realization=loop_guide_indices)
+        rlz_in_composite_msg = 'Number of realizations in composite: ' \
+            + str(len(loop_guide_indices))
+        ic(rlz_in_composite_msg)
         #### Plotting and related settings
-        plot_this = da_cmpst.compute()
-        nd_cmpst = fproc.namer(da_cmpst, setp_cmpst)
-        nd_gde = fproc.namer(gde_d["raw_ds"], setp_gde)
-        yr_str_base = fproc.str_yrs(setp_cmpst.yrs_rel_to)
-        ppar.title = nd_cmpst['data_id'] + ' ' + nd_cmpst['var_w'] + ' ' \
-            + nd_cmpst['yr_str'] + ' based on ' + nd_gde['var_w'] + ' ' \
-            + gp.guide_by + ' ' + gp.cmpst_key + ' ' + nd_gde['yr_str'] \
-            + ' ' + 'for ' + nd_gde['reg_str']
-        #  Wait for plt.savefig to add file extension to allow further edits
-        plot_name = nd_cmpst['data_id'] + '_' + nd_cmpst['var_nw'] + '_' \
-            + nd_cmpst['yr_str'] + '_relto' + yr_str_base + '_bon' \
-            + nd_gde['var_nw'] + '_' + gp.guide_by + gp.cmpst_key + '_' \
-            + nd_gde['yr_str'] + '_' + nd_gde['reg_abv']
+        plot_this = da_composite.compute()
+        name_dict_composite = fproc.namer(da_composite, setp_composite)
+        name_dict_guide = fproc.namer(guide_dict["raw_ds"], setp_guide)
+        yr_str_base = fproc.str_yrs(setp_composite.yrs_rel_to)
+        ppar.title = name_dict_composite['data_id'] + ' ' \
+            + name_dict_composite['var_w'] + ' ' \
+            + name_dict_composite['yr_str'] + ' based on ' \
+            + name_dict_guide['var_w'] + ' ' + gp.guide_by + ' ' \
+            + gp.composite_key + ' ' + name_dict_guide['yr_str'] + ' ' \
+            + 'for ' + name_dict_guide['reg_str']
+        #  Wait for later plt.savefig call to add file extension
+        loop_filename = name_dict_composite['data_id'] + '_' \
+            + name_dict_composite['var_nw'] + '_' \
+            + name_dict_composite['yr_str'] + '_relto' + yr_str_base + '_bon' \
+            + name_dict_guide['var_nw'] + '_' + gp.guide_by \
+            + gp.composite_key + '_' + name_dict_guide['yr_str'] + '_' \
+            + name_dict_guide['reg_abv']
         plt.rcParams.update({'font.family': 'Catamaran'})
         #  'font.weight': normal, bold, heavy, light, ultrabold, ultralight
         plt.rcParams.update({'font.weight': 'light'})
         plt.rcParams.update({'font.size': 12})       
-        if ppar.plot_all:
+        if ppar.plot_each_member:
             for r in plot_this.realization.data:
-                act = plot_this.sel(realization=r)
-                rlz_pfx = 'rlz' + str(r) + '_'
-                ppar.o_name = rlz_pfx + plot_name
+                loop_rlz = plot_this.sel(realization=r)
+                rlz_prefix = 'rlz' + str(r) + '_'
+                ppar.o_name = rlz_prefix + loop_filename
                 ppar.title = ppar.title + ' rlz ' + str(r + 1)
                 plt.figure()
                 ic(ppar.o_name, ppar.title)
-                fpl.plot_globe(act, ppar)
-                ppar.o_name = ppar.o_name.replace(rlz_pfx, '')
+                fpl.plot_globe(loop_rlz, ppar)
+                ppar.o_name = ppar.o_name.replace(rlz_prefix, '')
                 ppar.title = ppar.title.replace(' rlz ' + str(r + 1), '')
-                ppar.o_name = ppar.o_prefix + plot_name
+                ppar.o_name = ppar.o_prefix + loop_filename
                 plt.close()
         else:
-            act = plot_this.mean(dim='realization')
-            if setp_cmpst.z_flag:
-                ppar_gdd_ts.o_name = plot_name + '_zscore'
-            l_panes.append(act)
-            l_panes_intvl.append(intvl)
-            if ppar_reg.o_bool:
-                fig, ax_comp = fpl.plot_globe(act, ppar)
-                ppar_reg.o_name = ppar.o_prefix + plot_name
-                if len(setp_gde.reg_oi["reg_lats"]) > 1:
-                    reg_ones = fpl.mask_region(setp_gde.reg_oi)
-                    fpl.plot_globe(reg_ones, ppar_reg, ax=ax_comp)
+            loop_rlz_mn = plot_this.mean(dim='realization')
+            if setp_composite.z_flag:
+                ppar_guide_ts.o_name = loop_filename + '_zscore'
+            l_composites_for_super.append(loop_rlz_mn)
+            l_intervals_for_super.append(interval)
+            if ppar_region.o_bool:
+                fig, ax_composite = fpl.plot_globe(loop_rlz_mn, ppar)
+                ppar_region.o_name = ppar.o_prefix + loop_filename
+                #  If based on region, mask region
+                if len(setp_guide.reg_oi["reg_lats"]) > 1:
+                    reg_ones = fpl.mask_region(setp_guide.reg_oi)
+                    fpl.plot_globe(reg_ones, ppar_region, ax=ax_composite)
+                #  Otherwise it's a point, just plot that point
                 else:
                     fpl.plot_globe_ng(
-                        ppar_reg.color, setp_gde.reg_oi["reg_lats"], 
-                        setp_gde.reg_oi["reg_lons"], ppar_reg, ax=ax_comp)
+                        ppar_region.color, setp_guide.reg_oi["reg_lats"], 
+                        setp_guide.reg_oi["reg_lons"], ppar_region, 
+                        ax=ax_composite)
                 plt.close()    
         if pair_timeseries:
             plt.figure()
-            rlz_str = str(act_ind).replace('[', '').replace(']', '').replace(' ', '-')
-            ppar_gdd_ts.title = nd_gde["data_id"] + ' ' + nd_gde["reg_str"] + ' ' \
-                + nd_gde["var_w"] + ' ' + nd_gde["yr_str"] + ' ' + gp.cmpst_key
-            if len(act_ind) < 6:
-                ppar_gdd_ts.title = ppar_gdd_ts.title + ' ' + rlz_str
-            ts_name = nd_gde["data_id"] + '_' + nd_gde["var_nw"] + '_' \
-                + nd_gde["reg_abv"] + '_' + nd_gde["yr_str"] + '_' + gp.cmpst_key \
+            rlz_str = str(
+                loop_guide_indices).replace(
+                    '[', '').replace(']', '').replace(' ', '-').replace('--', '-')
+            ppar_guide_ts.title = name_dict_guide["data_id"] + ' ' \
+                + name_dict_guide["reg_str"] + ' ' + name_dict_guide["var_w"] \
+                + ' ' + name_dict_guide["yr_str"] + ' ' + gp.composite_key
+            #  For composites based on a small number of realizations,
+            #  include the indices in the title. In my experience, this
+            #  becomes impractical beyond ~5 indices so it is omitted
+            #  past that number, though still included in the filename.
+            if len(loop_guide_indices) < 6:
+                ppar_guide_ts.title = ppar_guide_ts.title + ' ' + rlz_str
+            ts_filename = name_dict_guide["data_id"] + '_' \
+                + name_dict_guide["var_nw"] + '_' \
+                + name_dict_guide["reg_abv"] + '_' \
+                + name_dict_guide["yr_str"] + '_' + gp.composite_key \
                 + '_' + 'rlz' + rlz_str
-            ppar_gdd_ts.o_name = ppar.o_prefix + ts_name
-            all_gdd = da_roi_alltimes.squeeze()
-            all_gdd_yrs = da_roi_alltimes.year.data
-            fpl.plot_timeseries_spaghetti(all_gdd, all_gdd_yrs, ppar_gdd_ts_gray)
-            act_gdd = da_gde.sel(realization=act_ind).squeeze()
-            act_gdd_yrs = da_gde.year.data
-            fpl.plot_timeseries_spaghetti(act_gdd, act_gdd_yrs, ppar_gdd_ts)
-        toc = time.time() - tic; ic(toc)
-        if ((intvlc + 1) % super_int == 0) & (intvlc != 0):
-            sup_yrs = (str(l_panes_intvl[0][0]), str(l_panes_intvl[-1][-1]))
-            sups = sup_yrs[0] + '-' + sup_yrs[1] + ip.type
-            cs = (
-                ('_' + nd_cmpst['yr_str'] + '_relto' + yr_str_base), 
-                (nd_gde['yr_str'] + '_'))
-            da_composite = fproc.roll_window(l_panes)
+            ppar_guide_ts.o_name = ppar.o_prefix + ts_filename
+            all_guide = da_guide_alltimes.squeeze()
+            all_guide_yrs = da_guide_alltimes.year.data
+            #  Base layer for timeseries, all members and times
+            fpl.plot_timeseries_spaghetti(
+                all_guide, all_guide_yrs, ppar_guide_ts_all)
+            loop_guide = da_guide.sel(
+                realization=loop_guide_indices).squeeze()
+            loop_guide_yrs = da_guide.year.data
+            #  Top layer for timeseries, members and times in composite
+            fpl.plot_timeseries_spaghetti(
+                loop_guide, loop_guide_yrs, ppar_guide_ts)
+        toc = time.time() - tic
+        time_per_pair_msg = 'Seconds per figure pair: ' + str(round(toc, 2))
+        ic(time_per_pair_msg)
+        #  Use loop_count to make sure a time-average composite is 
+        #  produced each super_interval number of iterations
+        if ((loop_count + 1) % super_interval == 0) & (loop_count != 0):
+            super_info_strs = str(l_intervals_for_super[0][0]) + '-' \
+                + str(l_intervals_for_super[-1][-1]) + ip.type
+            cut_strs = (
+                ('_' + name_dict_composite['yr_str'] + '_relto' + yr_str_base), 
+                (name_dict_guide['yr_str'] + '_'))
+            da_composite = fproc.roll_window(l_composites_for_super)
             mean_composite = da_composite.mean(dim='window')
-            super_name = plot_name.replace(cs[0], '').replace(cs[1], '') + '_' + sups
-            ppar_super.o_name = ppar_super.o_prefix + super_name
-            ppar_super.title = nd_cmpst['data_id'] + ' ' + nd_cmpst['var_w'] \
-                + ' based on ' + nd_gde['var_w'] + ' ' + gp.guide_by + ' ' \
-                + gp.cmpst_key + ' ' + ip.type + ' ' + ip.span_str + 'yr ' \
-                + sups.replace(ip.type, '') + ' for ' + nd_gde['reg_str']
-            if ppar_reg.o_bool:
-                super_ppar_reg = ppar_reg
+            super_filename = loop_filename.replace(
+                cut_strs[0], '').replace(cut_strs[1], '') + '_' \
+                + super_info_strs
+            ppar_super.o_name = ppar_super.o_prefix + super_filename
+            ppar_super.title = name_dict_composite['data_id'] + ' ' \
+                + name_dict_composite['var_w'] + ' based on ' \
+                + name_dict_guide['var_w'] + ' ' + gp.guide_by + ' ' \
+                + gp.composite_key + ' ' + ip.type + ' ' + ip.span_str \
+                + 'yr ' + super_info_strs.replace(ip.type, '') + ' for ' \
+                + name_dict_guide['reg_str']
+            if ppar_region.o_bool:
+                super_ppar_reg = ppar_region
                 super_ppar_reg.o_name = ppar_super.o_name
                 super_ppar_reg.title = ppar_super.title
-                fig, ax_comp = fpl.plot_globe(mean_composite, ppar)
-                if len(setp_gde.reg_oi["reg_lats"]) > 1:
-                    reg_ones = fpl.mask_region(setp_gde.reg_oi)
-                    fpl.plot_globe(reg_ones, super_ppar_reg, ax=ax_comp)
+                fig, ax_super = fpl.plot_globe(mean_composite, ppar)
+                if len(setp_guide.reg_oi["reg_lats"]) > 1:
+                    reg_ones = fpl.mask_region(setp_guide.reg_oi)
+                    fpl.plot_globe(reg_ones, super_ppar_reg, ax=ax_super)
                 else:
                     fpl.plot_globe_ng(
-                        ppar_reg.color, setp_gde.reg_oi["reg_lats"], 
-                        setp_gde.reg_oi["reg_lons"], super_ppar_reg, ax=ax_comp)
+                        ppar_region.color, setp_guide.reg_oi["reg_lats"], 
+                        setp_guide.reg_oi["reg_lons"], super_ppar_reg, 
+                        ax=ax_super)
             else:
                 fpl.plot_globe(mean_composite, ppar_super)
-            if all_comp:
+            if avg_all_composites:
                 #  Need to append elements, not list
-                for lp in l_panes:
-                    l_windows.append(lp)
+                l_composites_for_all.append(c for c in l_composites_for_super)
             #  Reset for next supercomposite
-            l_panes = list()
-            l_panes_intvl = list()
-    if all_comp:
-        da_composite = fproc.roll_window(l_windows)
-        mean_composite = da_composite.mean(dim='window')
-        ppar_super.o_name = 'all_' + ppar_super.o_prefix + plot_name
-        ppar_super.title = nd_cmpst['data_id'] + ' ' + nd_cmpst['var_w'] \
-            + ' based on ' + nd_gde['var_w'] + ' ' + gp.guide_by + ' ' \
-            + gp.cmpst_key + ' ' + ip.type + ' ' + ip.span_str + 'yr ' \
-            + ip.strt_yr_str + '-' + ip.end_yr_str + ' for ' + nd_gde['reg_str']
-        fpl.plot_globe(mean_composite, ppar_super)
-        if ppar_reg.o_bool:
-            fig, ax_comp = fpl.plot_globe(mean_composite, ppar)
-            all_ppar_reg = ppar_reg
-            all_ppar_reg.o_name = ppar_super.o_name
-            all_ppar_reg.title = ppar_super.title
-            if len(setp_gde.reg_oi["reg_lats"]) > 1:
-                reg_ones = fpl.mask_region(setp_gde.reg_oi)
-                fpl.plot_globe(reg_ones, all_ppar_reg, ax=ax_comp)
+            l_composites_for_super = list()
+            l_intervals_for_super = list()
+    if avg_all_composites:
+        da_composite = fproc.roll_window(l_composites_for_all)
+        da_all_composites = da_composite.mean(dim='window')
+        ppar_super.o_name = 'all_' + ppar_super.o_prefix + loop_filename
+        ppar_super.title = name_dict_composite['data_id'] + ' ' \
+            + name_dict_composite['var_w'] + ' based on ' \
+            + name_dict_guide['var_w'] + ' ' + gp.guide_by + ' ' \
+            + gp.composite_key + ' ' + ip.type + ' ' + ip.span_str + 'yr ' \
+            + ip.strt_yr_str + '-' + ip.end_yr_str + ' for ' \
+            + name_dict_guide['reg_str']
+        fpl.plot_globe(da_all_composites, ppar_super)
+        if ppar_region.o_bool:
+            fig, ax_comp = fpl.plot_globe(da_all_composites, ppar)
+            all_ppar_region = ppar_region
+            all_ppar_region.o_name = ppar_super.o_name
+            all_ppar_region.title = ppar_super.title
+            if len(setp_guide.reg_oi["reg_lats"]) > 1:
+                reg_ones = fpl.mask_region(setp_guide.reg_oi)
+                fpl.plot_globe(reg_ones, all_ppar_region, ax=ax_comp)
             else:
                 fpl.plot_globe_ng(
-                    ppar_reg.color, setp_gde.reg_oi["reg_lats"], 
-                    setp_gde.reg_oi["reg_lons"], all_ppar_reg, ax=ax_comp)
-    total_toc = time.time() - total_tic; ic(total_toc)
+                    ppar_region.color, setp_guide.reg_oi["reg_lats"], 
+                    setp_guide.reg_oi["reg_lons"], all_ppar_region, 
+                    ax=ax_comp)
+    total_toc = time.time() - total_tic
+    time_total_msg = 'Seconds for entire run: ' + str(round(total_toc, 2))
+    ic(time_total_msg)
     
 def mp4s(stitch_bool, png_path, tok1, tok2, o_path, o_name):
     if stitch_bool:

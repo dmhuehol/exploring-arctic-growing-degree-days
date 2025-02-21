@@ -212,12 +212,12 @@ def get_params(type='', cmn_path=''):
     match type:
         case 'local':
             dp_gdd = cg.DataParams(
-                path='/Users/dhueholt/Documents/gddt_data/gdd/nomask/', 
+                path='/Users/dhueholt/Documents/gddt_data/gdd/lens2/', 
                 tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True, 
                 flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True, 
                 flag_land_mask=False, flag_roi=True)
             dp_gdd_roi_alltimes = cg.DataParams(
-                path='/Users/dhueholt/Documents/gddt_data/gdd/nomask/', 
+                path='/Users/dhueholt/Documents/gddt_data/gdd/lens2/', 
                 tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=False, 
                 flag_raw_da=False, flag_time_slice=False, 
                 flag_manage_rlz=False, flag_land_mask=False, flag_roi=True)
@@ -233,7 +233,7 @@ def get_params(type='', cmn_path=''):
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = None
             if cmn_path == '':
-                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20241206_moretuningaes/'
+                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250221_refactoringComposites/'
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/nomask/', 
@@ -301,9 +301,9 @@ def guide(da_ens, gp):
     
     ind_positive = ind_sort[da_ens.data[ind_sort] > 0]
     ind_negative = ind_sort[da_ens.data[ind_sort] < 0]
-    if "max" in gp.cmpst_key:
+    if "max" in gp.composite_key:
         try:
-            noi = int(gp.cmpst_key.replace('max', ''))
+            noi = int(gp.composite_key.replace('max', ''))
         except ValueError:
             msg = "Assuming max 1 entry."
             ic(msg)
@@ -311,9 +311,9 @@ def guide(da_ens, gp):
         maxn = ind_sort[-noi:]
         max_key = "max" + str(noi)
         ind_dict[max_key] = maxn
-    elif "min" in gp.cmpst_key:
+    elif "min" in gp.composite_key:
         try:
-            noi = int(gp.cmpst_key.replace('min', ''))
+            noi = int(gp.composite_key.replace('min', ''))
         except ValueError:
             msg = "Assuming min 1 entry."
             ic(msg)
@@ -470,8 +470,8 @@ def namer(da_plot, setp):
     filename and title corresponding to input DataArray and set dict.
     
     Arguments:
-    da_plot -- DataArray of interest
-    setp -- SetParams instance corresponding to da_plot
+    da_plot: DataArray of interest
+    setp: SetParams instance corresponding to da_plot
     
     Returns:
     name_dict: dict containing bits useful for filenames, titles, etc.

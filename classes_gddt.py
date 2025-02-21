@@ -103,17 +103,17 @@ class GuideParams:
     '''
     
     def __init__(
-        self, cmpst_key='', guide_by='', qoi=None):
+        self, composite_key='', guide_by='', qoi=None):
         ''' Constructor for GuideParams class 
         
         Keyword arguments:
-        cmpst_key: composite based on keys in dictionary from guide_by 
+        composite_key: composite based on keys in dictionary from guide_by 
             function (default: '')
         guide_by: property to classify members, see prep_guide in 
             fun_process for valid options (default: '')
         qoi: quantile of interest (default: None)
         '''
-        self.cmpst_key = cmpst_key
+        self.composite_key = composite_key
         self.guide_by = guide_by
         self.qoi = qoi
         
@@ -193,8 +193,8 @@ class PlotParams:
         frame_flag=False, kde_bool=False, label=None, leg_bool=False, 
         linestyle='--', lw=2, marker_size=8, marker='o', 
         member_crossover_bool=False, mn_bool=False, o_bool=True, o_name=None, 
-        o_path='', o_prefix='', plot_all=False, proj=None, set_bad=True, 
-        stat='count', storyline=False, title=None, title_size=14, 
+        o_path='', o_prefix='', plot_each_member=False, proj=None, 
+        set_bad=True, stat='count', storyline=False, title=None, title_size=14, 
         ts_type='spaghetti', x_label='', x_lim='auto', xticks='auto', 
         y_label='', y_lim='auto', yticks='auto'):
         ''' Constructor for PlotParams class, containing all possible 
@@ -247,7 +247,8 @@ class PlotParams:
         o_name: output name (default: None, often auto later)
         o_path: output path (default: '')
         o_prefix: add custom prefix to output file (default: '')
-        plot_all: true/false plot members separately (default: False)
+        plot_each_member: True/False plot members separately (default: 
+            False)
         proj: map projection or set_proj keyword (default: None)
         set_bad: true/false special color for NaN
         stat: statistic for histogram (default: count)
@@ -298,7 +299,7 @@ class PlotParams:
         self.o_name = o_name
         self.o_path = o_path
         self.o_prefix = o_prefix
-        self.plot_all = plot_all
+        self.plot_each_member = plot_each_member
         self.proj = proj
         self.set_bad = set_bad
         self.stat = stat
@@ -355,8 +356,8 @@ class SetParams:
     '''  
     def __init__(
         self, area_stat=None, base_yrs=None, beat=None,
-        dims=[], effect='', mask='', mask_flag=None, reg_oi=None, rho=None, 
-        rlz='', window=None, yrs=[], yrs_rel_to=[], z_flag=False):
+        dims=['SpecifyDims',], effect='', mask='', mask_flag=None, reg_oi=None, 
+        rho=None, rlz='', window=None, yrs=[], yrs_rel_to=[], z_flag=False):
         ''' Constructor for SetParams class.
         Keyword arguments:
         By default, configured for global data over 1850-1859 relative
@@ -367,7 +368,7 @@ class SetParams:
             size (default: None)
         beat: beat number for exceedance/crossover (default: None)
         dims: list of dimensions to calculate statistics (e.g., ['time', 
-            'realization'], default: [])
+            'realization'], default: ['SpecifyDims',])
         effect: effect size statistic to calculate ('cliffs', 
             'cliffs_mean', 'robustness', 'gexc', default: '')
         mask: landmask file path (default: '')
