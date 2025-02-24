@@ -142,7 +142,7 @@ def BrooksRange_point():
 
 def BrooksRange_colonist():
     reg_dict = {
-        "reg_str": 'Brooks Range colonist',
+        "reg_str": 'Brooks Range (67.38N, 202.5E)',
         "reg_abv": 'BrooksRangeCol',
         "reg_lats": np.array([67.5]),
         "reg_lons": np.array([202.])

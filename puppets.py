@@ -107,10 +107,9 @@ def paired_composites_ts(
         yr_str_base = fproc.str_yrs(setp_composite.yrs_rel_to)
         ppar.title = name_dict_composite['data_id'] + ' ' \
             + name_dict_composite['var_w'] + ' ' \
-            + name_dict_composite['yr_str'] + ' based on ' \
-            + name_dict_guide['var_w'] + ' ' + gp.guide_by + ' ' \
-            + gp.composite_key + ' ' + name_dict_guide['yr_str'] + ' ' \
-            + 'for ' + name_dict_guide['reg_str']
+            + name_dict_composite['yr_str'] + ' based on members with\n' \
+            + gp.composite_key + ' ' + gp.guide_by + ' ' \
+            + name_dict_guide['var_w'] + ' in ' + name_dict_guide['reg_str']
         #  Wait for later plt.savefig call to add file extension
         loop_filename = name_dict_composite['data_id'] + '_' \
             + name_dict_composite['var_nw'] + '_' \
@@ -143,6 +142,7 @@ def paired_composites_ts(
             l_intervals_for_super.append(interval)
             if ppar_region.o_bool:
                 fig, ax_composite = fpl.plot_globe(loop_rlz_mn, ppar)
+                ppar_region.title = ppar.title
                 ppar_region.o_name = ppar.o_prefix + loop_filename
                 #  If based on region, mask region
                 if len(setp_guide.reg_oi["reg_lats"]) > 1:
@@ -204,11 +204,11 @@ def paired_composites_ts(
                 + super_info_strs
             ppar_super.o_name = ppar_super.o_prefix + super_filename
             ppar_super.title = name_dict_composite['data_id'] + ' ' \
-                + name_dict_composite['var_w'] + ' based on ' \
-                + name_dict_guide['var_w'] + ' ' + gp.guide_by + ' ' \
-                + gp.composite_key + ' ' + ip.type + ' ' + ip.span_str \
-                + 'yr ' + super_info_strs.replace(ip.type, '') + ' for ' \
-                + name_dict_guide['reg_str']
+                + name_dict_composite['var_w'] + ' based on members with\n' \
+                + ' ' + gp.composite_key + ' ' + gp.guide_by + ' ' \
+                + name_dict_guide['var_w'] + ' ' + ip.type + ' ' \
+                + ip.span_str + 'yr ' + super_info_strs.replace(ip.type, '') \
+                + ' for ' + name_dict_guide['reg_str']
             if ppar_region.o_bool:
                 super_ppar_reg = ppar_region
                 super_ppar_reg.o_name = ppar_super.o_name
@@ -226,19 +226,21 @@ def paired_composites_ts(
                 fpl.plot_globe(mean_composite, ppar_super)
             if avg_all_composites:
                 #  Need to append elements, not list
-                l_composites_for_all.append(c for c in l_composites_for_super)
+                for cfs in l_composites_for_super:
+                    l_composites_for_all.append(cfs)
             #  Reset for next supercomposite
             l_composites_for_super = list()
             l_intervals_for_super = list()
     if avg_all_composites:
         da_composite = fproc.roll_window(l_composites_for_all)
         da_all_composites = da_composite.mean(dim='window')
-        ppar_super.o_name = 'all_' + ppar_super.o_prefix + loop_filename
+        all_ppar = ppar_super
+        all_ppar.o_name = 'all_' + ppar_super.o_prefix + loop_filename
         ppar_super.title = name_dict_composite['data_id'] + ' ' \
-            + name_dict_composite['var_w'] + ' based on ' \
-            + name_dict_guide['var_w'] + ' ' + gp.guide_by + ' ' \
-            + gp.composite_key + ' ' + ip.type + ' ' + ip.span_str + 'yr ' \
-            + ip.strt_yr_str + '-' + ip.end_yr_str + ' for ' \
+            + name_dict_composite['var_w'] + ' based on members with\n' \
+            + ' ' + gp.composite_key + ' ' + gp.guide_by + ' ' \
+            + name_dict_guide['var_w'] + ' ' + ip.type + ' ' + ip.span_str \
+            + 'yr ' + ip.strt_yr_str + '-' + ip.end_yr_str + ' for ' \
             + name_dict_guide['reg_str']
         fpl.plot_globe(da_all_composites, ppar_super)
         if ppar_region.o_bool:

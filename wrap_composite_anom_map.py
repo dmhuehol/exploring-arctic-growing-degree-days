@@ -1,4 +1,4 @@
-'''composite_anom_map
+'''wrap_composite_anom_map
 Script to composite and plot anomalies in one field based on properties
 of another guiding variable. Optionally, pairs the composite plot with a 
 timeseries of the guiding varaiables in the relevant time period and 
@@ -36,8 +36,7 @@ import puppets
 #  type: 'coe_hpc' or 'local'
 dp_gdd, dp_gdd_alltimes, dp_psl, dp_sst, dp_icefrac, cmn_path = fproc.get_params(
     type='local', cmn_path='')
-# ip = cg.IntervalParams(span=10, strt_yr=1850, end_yr=2100, type='rolling')
-ip = cg.IntervalParams(span=10, strt_yr=1850, end_yr=1865, type='rolling')
+ip = cg.IntervalParams(span=10, strt_yr=1850, end_yr=2100, type='rolling')
 setp_gdd = cg.SetParams(
     area_stat='mean', mask_flag='none', reg_oi=g_rlib.BrooksRange_colonist(), 
     rlz='all', yrs=[1850, 1859])
@@ -64,8 +63,8 @@ ppar_super = cg.PlotParams(
     cb_bool=True, cb_extent='neither', cb_label='auto', 
     cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], cb_vals=[-0.6, 0.6],
     cmap=fpl.balance_n(n=18), dpi=400, figsize=(10, 4), o_bool=False,
-    o_path=cmn_path, o_prefix='super_', plot_each_member=False, proj='EqualEarth180',
-    title_size=9)
+    o_path=cmn_path, o_prefix='super_', plot_each_member=False, 
+    proj='EqualEarth180', title_size=9)
 ppar_gdd_ts_gray = cg.PlotParams(
     color='#ff80ed', color_r='#c4c4c4', label='LENS2 members', o_bool=False, 
     lw=1, o_path=cmn_path, x_label='year', x_lim=[1850, 2100], 
@@ -75,7 +74,7 @@ ppar_gdd_ts = cg.PlotParams( # FRAME
     label='LENS2 members: ' + gp_gdd.composite_key,
     o_bool=True, o_path=cmn_path, x_label='year', x_lim=[1850, 2100], 
     y_label='GDD base 5', y_lim='auto')
-super_interval = 2 #30
+super_interval = 30
 pair_ts = True
 avg_all_composites = True
 

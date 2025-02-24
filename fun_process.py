@@ -233,7 +233,7 @@ def get_params(type='', cmn_path=''):
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = None
             if cmn_path == '':
-                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250221_refactoringComposites/'
+                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250224_remakingFigures/'
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/nomask/', 
