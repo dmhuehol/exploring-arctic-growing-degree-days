@@ -261,7 +261,7 @@ def get_params(type='', cmn_path=''):
                 flag_time_slice=True, flag_manage_rlz=True, 
                 flag_land_mask=False, flag_roi=False)   
             if cmn_path == '':
-                cmn_path = '/home/dhueholt/gddt_fig/frames/'
+                cmn_path = '/home/dhueholt/gddt_fig/frames/for_manuscript_202502/'
         
     return dp_gdd, dp_gdd_roi_alltimes, dp_psl, dp_sst, dp_icefrac, cmn_path
             

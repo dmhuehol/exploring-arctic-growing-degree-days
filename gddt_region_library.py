@@ -312,7 +312,7 @@ def SiberiaGuesstimate():
         
 def SiberiaNorthBorealForest():
     reg_dict = {
-        "reg_str": 'Siberia North Boreal Forest',
+        "reg_str": 'Siberia North of Boreal Forest',
         "reg_abv": 'SibNorBorFor',
         "reg_lats": np.array([60, 67.5]),
         "reg_lons": np.array([51.4, 82.4])
