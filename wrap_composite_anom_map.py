@@ -46,7 +46,7 @@ setp_psl = cg.SetParams(
 setp_sst = cg.SetParams(
     dims=['time', 'realization'], mask_flag=None, rlz='all', yrs=[1850, 1859], 
     yrs_rel_to=[1850, 1859], z_flag=True)
-gp_gdd = cg.GuideParams(guide_by='mean', composite_key='max20', qoi=0.25)
+gp_gdd = cg.GuideParams(guide_by='mean', composite_key='min20', qoi=0.25)
 ppar_base_composite = cg.PlotParams(
     cb_bool=True, cb_extent='neither', cb_label='auto', 
     cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], cb_vals=[-0.6, 0.6],

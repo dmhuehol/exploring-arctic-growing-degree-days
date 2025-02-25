@@ -262,7 +262,6 @@ def paired_composites_ts(
     
 def mp4s(stitch_bool, png_path, tok1, tok2, o_path, o_name):
     if stitch_bool:
-        l_stitched = list()
         glob1 = sorted(glob(png_path + tok1))
         glob2 = sorted(glob(png_path + tok2))
         ic(len(glob1), len(glob2))
