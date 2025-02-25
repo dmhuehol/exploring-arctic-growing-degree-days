@@ -35,7 +35,7 @@ stitch_bool = True
 cmn_path = '/Users/dhueholt/Documents/gddt_fig/FramesForAnimations/'
 #  No trailing slash on tup_reg
 tup_reg = (
-    'BrooksRangeColonist/SST/10yr/max20',)
+    'BrooksRangeColonist/SST/10yr/min20',)
 tok1 = '*bonGDD*.png'
 tok2 = '*_GDD_*.png'
 #  Substrings of path which are cut to automatically create mp4 filename

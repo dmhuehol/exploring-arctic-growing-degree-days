@@ -29,7 +29,6 @@ import sys
 
 from icecream import ic
 import matplotlib.cm as mcm
-import matplotlib.pyplot as plt
 
 import classes_gddt as cg
 import fun_process as fproc

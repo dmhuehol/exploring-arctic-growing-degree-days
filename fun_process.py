@@ -236,12 +236,12 @@ def get_params(type='', cmn_path=''):
                 cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250225_remakingFigures/'
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
-                path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/nomask/', 
+                path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/',
                 tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True, 
                 flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True, 
                 flag_land_mask=False, flag_roi=True)
             dp_gdd_roi_alltimes = cg.DataParams(
-                path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/nomask/', 
+                path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/', 
                 tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=False, 
                 flag_raw_da=False, flag_time_slice=False, 
                 flag_manage_rlz=False, flag_land_mask=False, flag_roi=True)
