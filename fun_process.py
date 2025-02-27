@@ -460,6 +460,21 @@ def make_polygon_mask(lats, lons, reg_lats, reg_lons):
     grid_mask = flat_mask.reshape((len(lats),len(lons)))
 
     return grid_mask
+
+def match_rlz_quantiles(data_rlz, quantile):
+    ''' Match realizations to quantile (e.g., identify storylines) '''
+    if np.isnan(quantile):
+        members_quantile = np.isnan(data_rlz) * 1
+        indices_quantile = np.nonzero(members_quantile)
+    else:
+        data_quantile = np.nanquantile(data_rlz, quantile)
+        members_quantile = data_rlz == np.round(data_quantile)
+        indices_quantile = np.nonzero(members_quantile)
+    msg_quantile = 'Indices matching ' + str(quantile) + ' quantile: ' \
+        + str(indices_quantile)
+    ic(msg_quantile)
+    
+    return indices_quantile
     
 def moving_average(x, w):
     ''' From https://stackoverflow.com/a/54628145 '''
@@ -567,8 +582,9 @@ def prep_guide(da_to_guide, gp):
     
     return da_guide_compute
 
-def gexc(np_x1, np_x2):
-    ''' Calculate Gexc for two samples of realizations. '''
+def exceed_subceed(np_x1, np_x2):
+    ''' Calculate exceedance and subceedance (Gexc and Gsub) for two 
+    samples of realizations. '''
     l_above = list()
     l_below = list()
     #  Compares each np_x2 element to every np_x1 element. Sadly, I have yet to
@@ -582,18 +598,38 @@ def gexc(np_x1, np_x2):
         count_x1ltx2 = np.count_nonzero(x1ltx2, axis=0)
         l_above.append(count_x1ltx2)
         l_below.append(count_x1gtx2)
-    d_gexc = {
-        "above": l_above,
-        "below": l_below
+    d_g = {
+        "gexc": l_above,
+        "gsub": l_below
     }
     
-    return d_gexc
+    return d_g
 
 def roll_window(list_windows):
     ''' Roll list of windows into a DataArray '''
     da_windows = xr.concat(list_windows, 'window')  
     
     return da_windows
+
+def sync_lengths(dict_both, sync_key='', ref_key=''):
+    ''' Repeat values indexed with one key to sync with the length 
+    of values indexed by another key. 
+    
+    Arguments:
+    dict_both: dictionary with both sync_key and ref_key
+    
+    Keyword arguments:
+    sync_key: key indexing values to be repeated to ref_key length
+    ref_key: keywith intended length
+
+    Returns:
+    dict_both: input dict, sync_key values repeated to ref_key length
+    '''
+    if (len(dict_both[sync_key]) == 1) & (len(dict_both[ref_key]) != 1):
+        dict_both[sync_key] = dict_both[sync_key] * len(dict_both[ref_key])
+    
+    return dict_both
+    
     
 def str_yrs(yrs_list):
     ''' Return useful string for titles from input years '''

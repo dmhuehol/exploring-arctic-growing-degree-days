@@ -125,7 +125,7 @@ class IntervalParams:
     
     __init__: Initiate an instance of the class with attributes
     '''
-    def __init__(self, span=None, strt_yr=None, end_yr=None, type='noverlap'):
+    def __init__(self, span=1, strt_yr=9999, end_yr=9999, type='noverlap'):
         ''' Constructor for IntervalParams class.
                  
         span: Span of interval
@@ -189,14 +189,30 @@ class PlotParams:
         cb_extent='neither', cb_label='', cb_ticks=None, cb_vals='auto', 
         cmap=None, coastline_bool=True, color='', color_r='#cccccc', 
         color_comp='#ff4444', comp_hist_bool=False, comp_label='', 
-        dpi=400, edgecolors=None, figsize=(10, 4), forced_crossover_bool=False, 
-        frame_flag=False, kde_bool=False, label=None, leg_bool=False, 
-        linestyle='--', lw=2, marker_size=8, marker='o', 
-        member_crossover_bool=False, mn_bool=False, o_bool=True, o_name=None, 
-        o_path='', o_prefix='', plot_each_member=False, proj=None, 
-        set_bad=True, stat='count', storyline=False, title=None, title_size=14, 
-        ts_type='spaghetti', x_label='', x_lim='auto', xticks='auto', 
-        y_label='', y_lim='auto', yticks='auto'):
+        dpi=400, edgecolors=None, figsize=(10, 4), frame_flag=False, 
+        kde_bool=False, label=None, leg_bool=False, linestyle='--', lw=2, 
+        marker_size=8, marker='o', 
+        mn_dict=dict(bool=False, color='', label='', linestyle='--', lw=3),
+        o_bool=True, o_name=None, o_path='', o_prefix='', 
+        plot_as_percent=False, plot_crossover_dict=dict(
+            forced_dict=dict(
+                bool=False, threshold=(), exceed_color=(), exceed_linestyle=(),
+                exceed_lw=(), years_alpha=(), years_color=(), 
+                years_linestyle=(), years_lw=()),
+            member_dict=dict(
+                bool=False, threshold=(), exceed_alpha=(), exceed_color=(), 
+                exceed_linestyle=(), exceed_lw=(), range_dict=dict(
+                    alpha=None, bool=False, edgecolor=None, range=[]), 
+                years_alpha=(), years_color=(), years_linestyle=(), 
+                years_lw=())),
+        plot_each_member=False, proj=None, 
+        rlz_dict=dict(
+            bool=False, color='', label='', linestyle='', lw=0.5,),
+        set_bad=True, stat='count', storyline_dict=dict(
+            select=False, color=[''], label=[''], linestyle=['--'], lw=[0.3,]),
+        title=None, 
+        title_size=14, ts_type='spaghetti', x_label='', x_lim='auto', 
+        xticks='auto', y_label='', y_lim='auto', yticks='auto'):
         ''' Constructor for PlotParams class, containing all possible 
         parameters for all plots: animations, histograms, timeseries, 
         maps.
@@ -228,8 +244,6 @@ class PlotParams:
         dpi: dpi of output image or 'pdf' for pdf (default: 400)
         edgecolors: edgecolor for scatterplot (default: None)
         figsize: figure size (default: (10,4))
-        forced_crossover_bool: true/false forced crossover (default: 
-            False)
         frame_flag: true/false plot individual frames (default: True)
         kde_bool: true/false kernel density estimate on hist (default: 
             False)
@@ -239,21 +253,117 @@ class PlotParams:
         lw: linewidth value (default: 2)
         marker_size: marker size for scatterplot (default: 8)
         marker: marker style for scatterplot (default: 'o')
-        member_crossover_bool: true/false member crossover (default: 
-            False)
-        mn_bool: true/false plot ensemble mean on timeseries (default: 
-            False)
+        mn_dict: dict for ensemble mean aesthetics on plots where 
+            ensemble mean and realizations are distinct (e.g., 
+            timeseries, histogram)
+            bool: True/False plot ensemble mean (default: False)
+            color: a single color to use for ensemble mean (default: '')
+            label: label for legend (default: '')
+            linestyle: line style for ensemble mean (default: '--')
+            lw: linewidth for ensemble mean (default: 3)
         o_bool: true/false save plot (default: True)
         o_name: output name (default: None, often auto later)
         o_path: output path (default: '')
         o_prefix: add custom prefix to output file (default: '')
+        plot_as_percent: True/False express as percent before plotting
+            (default: False)
         plot_each_member: True/False plot members separately (default: 
             False)
+        plot_crossover_dict: dict for plotting crossover on timeseries
+            forced_dict: dict for plotting forced crossover
+                bool: True/False plot forced crossover (default: False)
+                exceed_color: tuple of colors for exceedance thresholds.
+                    If one entry, use same colors for all; otherwise, 
+                    must match threshold key entry in length. (default: 
+                    ())
+                exceed_linestyle: tuple of linestyles for exceedance
+                    thresholds. If one entry, use same linestyle for 
+                    all; otherwise, must match threshold key entry in 
+                    length. (default: ())
+                exceed_lw: tuple of linewidths for exceedance 
+                    thresholds. If one entry, use same values for all;
+                    otherwise, must match threshold key entry in length. 
+                    (default: ())
+                threshold: tuple of thresholds for forced crossover 
+                    (default: ())
+                years_alpha: tuple of alphas for crossover years. If one
+                    entry, use same alphas for all; otherwise, must 
+                    match threshold key entry in length. (default: ())
+                years_color: tuple of colors for crossover years. If one
+                    entry, use same colors for all; otherwise, must 
+                    match threshold key entry in length. (default: ())
+                years_linestyle: tuple of linestyles for crossover 
+                    years. If one entry, use same linestyle for all;
+                    otherwise, must match threshold key entry in length. 
+                    (default: ())
+                years_lw: tuple of linewidths for crossover years. If 
+                    one entry, use same values for all; otherwise, must
+                    match threshold key entry in length. (default: ())
+            member_dict: dict for plotting member crossover
+                bool: True/False plot member crossover (default: False)
+                exceed_alpha: tuple of alphas for exceedance thresholds.
+                    If one entry, use same alphas for all; otherwise, 
+                    must match threshold key entry in length. (default: 
+                    ())
+                exceed_color: tuple of colors for exceedance thresholds.
+                    If one entry, use same colors for all; otherwise, 
+                    must match threshold key entry in length. (default: 
+                    ())
+                exceed_linestyle: tuple of linestyles for exceedance
+                    thresholds. If one entry, use same linestyle for 
+                    all; otherwise, must match threshold key entry in 
+                    length. (default: ())
+                exceed_lw: tuple of linewidths for exceedance 
+                    thresholds. If one entry, use same values for all;
+                    otherwise, must match threshold key entry in length. 
+                    (default: ())
+                range_dict: dict for plotting range of member crossovers
+                    alpha: transparency value to plot (default: 0)
+                    bool: True/False plot range (default: False)
+                    color: color for range (default: '')
+                    edgecolor: edgecolor for range (default: None)
+                    range: list of percentiles to plot range (default: 
+                        [])
+                threshold: tuple of thresholds for member crossover 
+                    (default: ())
+                years_alpha: tuple of alphas for crossover years. If one
+                    entry, use same alphas for all; otherwise, must 
+                    match threshold key entry in length. (default: ())
+                years_color: tuple of colors for crossover years. If one
+                    entry, use same colors for all; otherwise, must 
+                    match threshold key entry in length. (default: ())
+                years_linestyle: tuple of linestyles for crossover 
+                    years. If one entry, use same linestyle for all;
+                    otherwise, must match threshold key entry in length. 
+                    (default: ())
+                years_lw: tuple of linewidths for crossover years. If 
+                    one entry, use same values for all; otherwise, must
+                    match threshold key entry in length. (default: ())
         proj: map projection or set_proj keyword (default: None)
+        rlz_dict: dict for realization aesthetics on plots where 
+            ensemble mean and realizations are distinct (e.g., 
+            timeseries, histogram)
+            bool: True/False plot realizations (default: False)
+            color: color to use for all realizations (default: '')
+            label: label for legend (default: '')
+            linestyle: line style for realizations (default: '--')
+            lw: linewidth for realizations (default: 0.5)
+        select_storyline: xth percentile, member to plot, or False 
+            (default: False)
         set_bad: true/false special color for NaN
         stat: statistic for histogram (default: count)
-        storyline: xth percentile or member to plot or False (default: 
-            False)
+        storyline_dict: dict for storyline plotting and aesthetics
+            select: member or list of members to plot; single value in 
+                [0, 1] for nth percentile; False or None to disable
+                (default: False)
+            color: color or list of colors for storylines (default: 
+                [''])
+            label: label or list of labels for storylines in legend 
+                (default: [''])
+            linestyle: line style or list of line styles for storylines 
+                (default: ['--'])
+            lw: linewidth or list of linewidths for storylines (default: 
+                [0.5])
         title: title for figure (default: None, often auto later)
         title_size: size of title font (default: 14)
         ts_type: 'spread' or 'spaghetti' for timeseries
@@ -284,7 +394,6 @@ class PlotParams:
         self.dpi = dpi
         self.edgecolors = edgecolors
         self.figsize = figsize
-        self.forced_crossover_bool = forced_crossover_bool
         self.frame_flag = frame_flag
         self.kde_bool = kde_bool
         self.label = label
@@ -293,17 +402,19 @@ class PlotParams:
         self.lw = lw
         self.marker_size = marker_size
         self.marker = marker
-        self.member_crossover_bool = member_crossover_bool
-        self.mn_bool = mn_bool
+        self.mn_dict = mn_dict
         self.o_bool = o_bool
         self.o_name = o_name
         self.o_path = o_path
         self.o_prefix = o_prefix
+        self.plot_as_percent = plot_as_percent
         self.plot_each_member = plot_each_member
+        self.plot_crossover_dict = plot_crossover_dict
         self.proj = proj
+        self.rlz_dict = rlz_dict
         self.set_bad = set_bad
         self.stat = stat
-        self.storyline = storyline
+        self.storyline_dict = storyline_dict
         self.title = title
         self.title_size = title_size
         self.ts_type = ts_type
@@ -356,8 +467,8 @@ class SetParams:
     '''  
     def __init__(
         self, area_stat=None, base_yrs=None, beat=None,
-        dims=['SpecifyDims',], effect='', mask='', mask_flag=None, reg_oi=None, 
-        rho=None, rlz='', window=None, yrs=[], yrs_rel_to=[], z_flag=False):
+        dims=['SpecifyDims',], mask='', mask_flag=None, reg_oi=None, 
+        rlz='', window=None, yrs=[], yrs_rel_to=[], z_flag=False):
         ''' Constructor for SetParams class.
         Keyword arguments:
         By default, configured for global data over 1850-1859 relative
@@ -366,15 +477,11 @@ class SetParams:
             default: None)
         base_yrs: baseline year or span of years to compare for effect 
             size (default: None)
-        beat: beat number for exceedance/crossover (default: None)
         dims: list of dimensions to calculate statistics (e.g., ['time', 
             'realization'], default: ['SpecifyDims',])
-        effect: effect size statistic to calculate ('cliffs', 
-            'cliffs_mean', 'robustness', 'gexc', default: '')
         mask: landmask file path (default: '')
         mask_flag: str or list for fields to mask on (default: None)
         reg_oi: 'global' or gddt_region_library object (default: None)
-        rho: threshold for robustness calculation (default: None)
         rlz: see manage_rlz for valid settings (default: '')
         window: years for window function (default: None)
         yrs: year or list of spanning years to select (default: [])
@@ -384,13 +491,10 @@ class SetParams:
         '''
         self.area_stat = area_stat
         self.base_yrs = base_yrs
-        self.beat = beat
         self.dims = dims
-        self.effect = effect
         self.mask = mask
         self.mask_flag = mask_flag
         self.reg_oi = reg_oi
-        self.rho = rho
         self.rlz = rlz
         self.window = window
         self.yrs = yrs

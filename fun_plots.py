@@ -28,6 +28,7 @@ from PIL import Image
 import seaborn as sn
 import xarray as xr
 
+import fun_calc_var as fcv
 import fun_process as fproc
 ########################################################################
 ####  GLOBAL
@@ -285,113 +286,164 @@ def plot_timeseries(to_plt, x_d=None, ppar=None):
             
     return None
 
-def plot_effect_timeseries(to_plt, x_d=None, lera_gm=None, ppar=None):
-    ''' Make a timeseries of an effect size statistic, with optional
-    thresholds denoting "crossover."
+def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
+    ''' Make a timeseries of exceedance with crossover thresholds 
+    and storylines annotated.
+
+    Hand-tuned aesthetics:
+        x-limits of exceedance threshold (horizontal lines)
+        y-limits of vertical crossover lines
+        y-limits of quantile range
+        Top and right spines are manually disabled
+    
+    Arguments:
+    to_plt -- object to plot with exceedance data, ideally np array
     
     Keyword arguments:
-    to_plt -- object to plot, ideally an np array
     x_d -- abscissa data
     ppar -- PlotParams instance
-    
-    Returns: None at present.
+
+    Returns: None at present
     '''
-    if not ppar.storyline:
-        plt.plot(x_d, to_plt, lw=ppar.lw, color=ppar.color_r, label=ppar.label)
-        ## HARD CODE
-        #db9dbe
-        # plt.plot(x_d, to_plt[:, 24], lw=0.9, color='#97215C', label=ppar.label)
-        # plt.plot(x_d, to_plt[:, 52], lw=0.9, color='#b66363', label=ppar.label)
-        plt.plot(x_d, to_plt[:, 11], lw=0.9, color='k', label=ppar.label)
-        plt.plot(x_d, to_plt[:, 52], lw=0.9, color='k', label=ppar.label)
-    if ppar.mn_bool:
-        to_plt_mn = np.mean(to_plt, axis=1)
-        ic(to_plt_mn)
-        to_plt_lera = lera_gm / 2000 * 100
-        plt.plot(x_d, to_plt_mn, lw=3, color=ppar.color, label='ens mean')
-        # plt.plot(x_d, to_plt_lera, lw=3, color='k', label='ens mean')
-    #  Manually plot custom vertical line
-    if ppar.forced_crossover_bool:
-        # cross_thresh = (60, 80, 90, 95, 99, 99.9, 100)
-        cross_thresh = (20, 40, 60, 80, 100)
-        # cross_thresh = (80, )
-        for thr in cross_thresh:
-            if thr != 80:
-                plt.plot(
-                    [1850, 2100], [thr, thr], color='#2098ae',
-                    linestyle='--', lw=0.5)
-            if thr == 80:
-                plt.plot(
-                    [1850, 2100], [thr, thr], color='#2098ae',
-                    linestyle='--', lw=1)
-                crossover = to_plt_mn > thr
-                x_crossover = x_d[crossover][0]
-                plt.plot(
-                    [x_crossover, x_crossover], [-100, 100], color='#2098ae',
-                    linestyle='--', lw=1)
-            # if thr == 100:
-            #     crossover = to_plt_mn == thr
-            # else:
-            #     crossover = to_plt_mn > thr
-            # try:
-            #     x_crossover = x_d[crossover][0]
-            #     plt.plot(
-            #         [x_crossover, x_crossover], [-100, 100], color='#2098ae',
-            #         linestyle='--')
-            #     str_crossover = 'Crossover ' + str(thr) + '%' + \
-            #         ' in ens mean: ' + str(x_crossover)
-            #     ppar.title = ppar.title #+ ' ' + str_crossover
-            #     ic(str_crossover)
-            # except IndexError:
-            #     str_crossover = 'No crossover ' + str(thr) + '%' + ' in ens mean'
-            # ic(str_crossover)
-    if ppar.member_crossover_bool:
-        cross_thresh = 90
-        if cross_thresh == 100:
-            all_crossover = to_plt == cross_thresh
-        else:
-            all_crossover = to_plt > cross_thresh
-        member_crossover = list()
-        for ac in all_crossover.T:
+    # years_span = [x_d[0], x_d[-1]]
+    years_span = [1850, 2100]
+    to_plt_mn = np.mean(to_plt, axis=1)
+    #  Plot all members
+    if ppar.rlz_dict['bool']:
+        plt.plot(
+            x_d, to_plt, color=ppar.rlz_dict['color'], 
+            label=ppar.rlz_dict['label'], linestyle=ppar.rlz_dict['linestyle'],
+            lw=ppar.rlz_dict['lw'])
+    #  Ensemble mean plotting
+    if ppar.mn_dict['bool']:
+        plt.plot(
+            x_d, to_plt_mn, color=ppar.mn_dict['color'], 
+            label=ppar.mn_dict['label'], linestyle=ppar.mn_dict['linestyle'],
+            lw=ppar.mn_dict['lw'])
+    #  Forced crossover calculation and plotting
+    if ppar.plot_crossover_dict['forced_dict']['bool']:
+        ppar.o_name = 'forced_' + ppar.o_name
+        forced_dict = ppar.plot_crossover_dict['forced_dict']
+        for sync_key in (
+            'exceed_color', 'exceed_linestyle', 'exceed_lw', 'years_alpha',
+            'years_color', 'years_linestyle', 'years_lw'):
+            forced_dict = fproc.sync_lengths(
+                forced_dict, sync_key=sync_key, ref_key='threshold')
+        for forced_count, forced_threshold in enumerate(
+            forced_dict['threshold']):
+            #  Exceedance threshold(s) plotted as horizontal lines
+            plt.plot(
+                years_span, [forced_threshold, forced_threshold], 
+                color=forced_dict['exceed_color'][forced_count],
+                linestyle=forced_dict['exceed_linestyle'][forced_count], 
+                lw=forced_dict['exceed_lw'][forced_count])
+            #  Calculate forced crossover, plot as vertical lines, print 
+            #  strings of when this occurs for each requested threshold.
+            forced_crossover = fcv.calc_crossover(to_plt_mn, forced_threshold)
             try:
-                member_crossover.append(x_d[ac][0])
+                forced_crossover_year = x_d[forced_crossover][0]
+                plt.plot(
+                    [forced_crossover_year, forced_crossover_year],
+                    [-100, 100], 
+                    alpha=forced_dict['years_alpha'][forced_count], 
+                    color=forced_dict['years_color'][forced_count], 
+                    label=str(forced_crossover_year),
+                    linestyle=forced_dict['years_linestyle'][forced_count],
+                    lw=forced_dict['years_lw'][forced_count])
+                msg_crossover = 'Forced crossover ' + str(forced_threshold) \
+                    + '%' + ' threshold: ' + str(forced_crossover_year)
             except IndexError:
-                member_crossover.append(np.nan)
-        member_crossover = np.array(member_crossover)
-        ic(to_plt)
-        ic(member_crossover, member_crossover[11], member_crossover[52])
-
-        if not ppar.storyline:
-            mc_10p = np.nanquantile(member_crossover, 0.1)
-            mc_90p = np.nanquantile(member_crossover, 0.9)
-            ic(mc_10p, mc_90p)
-            # plt.plot(
-            #     [1850, 2100], [cross_thresh, cross_thresh], color='#d285ae',
-            #     linestyle='--')
-            plt.fill_between([mc_10p, mc_90p], [-100, -100], [100, 100], color='#d285ae', edgecolor=None, alpha=0.6)
-        else:
-            if ppar.storyline < 1:
-                mc_sp = np.nanquantile(member_crossover, ppar.storyline)
-                members_p = member_crossover == np.round(mc_sp)
-                ic(mc_sp, members_p.nonzero())
-                members_to_plt = to_plt[:, members_p]
-                plt.plot(x_d, members_to_plt, lw=ppar.lw, color=ppar.color_r, label=ppar.label)
-                plt.plot(
-                    [1850, 2100], [cross_thresh, cross_thresh], color='#d285ae',
-                    linestyle='--')
-            else:
-                members_to_plt = to_plt[:, ppar.storyline]
-                mc_sp = x_d[members_to_plt > cross_thresh][0]
-                ic(mc_sp)
-                plt.plot(x_d, members_to_plt, lw=ppar.lw, color=ppar.color_r, label=ppar.label)
-                plt.plot(
-                    [1850, 2100], [cross_thresh, cross_thresh], color='#d285ae',
-                    linestyle='--')
-                plt.plot(
-                    [np.round(mc_sp), np.round(mc_sp)], [0, 100.05], color='#d285ae',
-                    linestyle='--')
-                ppar.title = ppar.title + ' crossover: ' + str(np.round(mc_sp))
-
+                msg_crossover = 'No forced crossover at ' \
+                    + str(forced_threshold) + '%' + ' threshold'
+            ic(msg_crossover)
+    #  Member crossover calculation and plotting
+    if ppar.plot_crossover_dict['member_dict']['bool']:
+        ppar.o_name = 'member_' + ppar.o_name
+        member_dict = ppar.plot_crossover_dict['member_dict']
+        for sync_key in (
+            'exceed_color', 'exceed_linestyle', 'exceed_lw', 'years_color',
+            'years_linestyle', 'years_lw'):
+            member_dict = fproc.sync_lengths(
+                member_dict, sync_key=sync_key, ref_key='threshold')
+        for rlz_threshold_count, rlz_threshold in enumerate(
+            member_dict['threshold']):
+            if rlz_threshold == 100:
+                ppar.o_name = 'noan_' + ppar.o_name
+            #  Exceedance threshold(s) plotted as horizontal lines
+            plt.plot(
+                years_span, [rlz_threshold, rlz_threshold], 
+                alpha=member_dict['exceed_alpha'][rlz_threshold_count], 
+                color=member_dict['exceed_color'][rlz_threshold_count],
+                linestyle=member_dict['exceed_linestyle'][rlz_threshold_count], 
+                lw=member_dict['exceed_lw'][rlz_threshold_count])
+            l_member_crossover = list()
+            all_crossover = fcv.calc_crossover(to_plt, rlz_threshold)
+            for member_exceedance in all_crossover.T:
+                try:
+                    member_crossover = x_d[member_exceedance][0]
+                    l_member_crossover.append(member_crossover)
+                except IndexError:
+                    l_member_crossover.append(np.nan)
+            np_member_crossover = np.array(l_member_crossover)
+            #  Storylines of member crossover
+            try:
+                storyline_dict = ppar.storyline_dict
+                #  If a quantile is input, find matching members first
+                if (storyline_dict['select'][0] < 1) \
+                    | (np.isnan(storyline_dict['select'][0])):
+                    storyline_dict['select'] = fproc.match_rlz_quantiles(
+                        np_member_crossover, storyline_dict['select'])
+                #  Plot each storyline
+                for story_count, story in enumerate(storyline_dict['select']):
+                    to_plt_story = to_plt[:, story]
+                    story_crossover = np_member_crossover[story]
+                    msg_story_crossover = 'Member crossover ' \
+                        + str(rlz_threshold) + '%' \
+                        + ' threshold for storyline ' + str(story) + ': ' \
+                        + str(story_crossover)
+                    ic(msg_story_crossover)
+                    story_str = 'story' \
+                        + str(
+                            storyline_dict['select']).replace(
+                                '[','').replace(
+                                    ']','').replace(' ','').replace(',','-')
+                    ppar.o_name = story_str + '_' + ppar.o_name
+                    plt.plot(
+                        x_d, to_plt_story, 
+                        color=storyline_dict['color'][story_count], 
+                        label=storyline_dict['label'][story_count], 
+                        linestyle=storyline_dict['linestyle'][story_count],
+                        lw=storyline_dict['lw'][story_count])
+                    plt.plot(
+                        [story_crossover, story_crossover], [-100, 100], 
+                        alpha=member_dict['years_alpha'][rlz_threshold_count], 
+                        color=member_dict['years_color'][rlz_threshold_count], 
+                        label=str(story_crossover),
+                        linestyle=member_dict[
+                            'years_linestyle'][rlz_threshold_count],
+                        lw=member_dict['years_lw'][rlz_threshold_count])     
+            except TypeError:
+                #  Do nothing if storyline_dict['select'] is None, False
+                pass
+            #  Plot range of member crossovers
+            if member_dict['range_dict']['bool']:
+                quantile_lower = np.nanquantile(
+                    np_member_crossover, member_dict['range_dict']['range'][0])
+                quantile_upper = np.nanquantile(
+                    np_member_crossover, member_dict['range_dict']['range'][1])
+                msg_range = 'Range at ' + str(rlz_threshold) + '% threshold ' \
+                    + str(member_dict['range_dict']['range'][0] * 100) \
+                    + ' to ' + str(
+                        member_dict['range_dict']['range'][1] * 100) \
+                    + ' percentile: ' + str(int(quantile_lower)) + ' to ' \
+                    + str(int(quantile_upper))
+                ic(msg_range)
+                plt.fill_between(
+                    [quantile_lower, quantile_upper], [-100, -100], [100, 100], 
+                    alpha=member_dict['range_dict']['alpha'],
+                    color=member_dict['range_dict']['color'], 
+                    edgecolor=member_dict['range_dict']['edgecolor'])
+    #  Disable spines, apply timeseries parameters
     plt.gcf().axes[0].spines['top'].set_visible(False)
     plt.gcf().axes[0].spines['right'].set_visible(False)
     if ppar is not None:
@@ -562,9 +614,11 @@ def apply_params_ts(ppar):
         plt.legend()
     if ppar.o_bool:
         if ppar.dpi == 'pdf':
-            plt.savefig(ppar.o_path + ppar.o_name + '.pdf')
+            plt.savefig(ppar.o_path + ppar.o_prefix + ppar.o_name + '.pdf')
         else:
-            plt.savefig(ppar.o_path + ppar.o_name + '.png', dpi=ppar.dpi)
+            plt.savefig(
+                ppar.o_path + ppar.o_prefix + ppar.o_name + '.png', 
+                dpi=ppar.dpi)
     
     return None
     

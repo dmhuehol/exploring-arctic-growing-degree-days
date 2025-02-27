@@ -12,7 +12,20 @@ from sklearn import linear_model
 import xarray as xr
 
     
-    
+def calc_crossover(data_exceedance, threshold):
+    ''' Calculate crossover at a given threshold given exceedance 
+    data. '''
+    if threshold == 100:
+        all_crossover = data_exceedance == threshold
+    elif (threshold < 100) & (threshold > 0):
+        all_crossover = data_exceedance > threshold
+    else:
+        ic(threshold)
+        raise ValueError('Threshold must be in range [0, 100].') 
+    all_crossover = np.array(all_crossover)
+
+    return all_crossover
+
 def calc_lin_reg(x_data, y_data):
     ''' Calculate linear regression and retrieve coefficients '''
     est = linear_model.LinearRegression(fit_intercept=True)
