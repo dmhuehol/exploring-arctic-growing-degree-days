@@ -65,7 +65,7 @@ ppar_forced_range_storyline2452 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250227_continueRemaking/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(
@@ -103,7 +103,7 @@ ppar_storyline24 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250227_continueRemaking/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
@@ -116,10 +116,11 @@ ppar_storyline24 = cg.PlotParams(
     rlz_dict=dict(bool=False,), 
     storyline_dict=dict(
         select=[24,], color=['#b66363',], label=['member 24',], 
-        linestyle=['-',], lw=[1.5,]),
+        linestyle=['-',], lw=[2,]),
     title=setp_gdd.reg_oi['reg_str'], ts_type='spaghetti', x_label='', 
     x_lim=[1850, 2100], 
-    y_label='exceed percent of Preindustrial control years', y_lim=[0, 100.05])
+    y_label='exceed percent of Preindustrial control years', y_lim=[0, 100.05],
+    yticks=[30, 60, 90])
 #  PlotParams settings for MEMBER CROSSOVER and ONLY STORYLINE 52 
 #  (Figure 2c):
 ppar_storyline52 = cg.PlotParams(
@@ -130,7 +131,7 @@ ppar_storyline52 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250227_continueRemaking/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
@@ -143,21 +144,22 @@ ppar_storyline52 = cg.PlotParams(
     rlz_dict=dict(bool=False,), 
     storyline_dict=dict(
         select=[52,], color=['#2098ae',], label=['member 52',], 
-        linestyle=['-',], lw=[1.5,]),
+        linestyle=['-',], lw=[2,]),
     title=setp_gdd.reg_oi['reg_str'], ts_type='spaghetti', x_label='', 
     x_lim=[1850, 2100], 
-    y_label='exceed percent of Preindustrial control years', y_lim=[0, 100.05])
+    y_label='exceed percent of Preindustrial control years', y_lim=[0, 100.05],
+    yticks=[30, 60, 90])
 #  PlotParams settings for MODIFICATION FOR EXPLORATORY ANALYSIS
 #  currently exploring meaning and interpretation of no-analog states
 ppar_exploratory = cg.PlotParams(
     dpi=400, leg_bool=False, lw=0.5,
     mn_dict=dict(
-        bool=True, color='#515151', label='Ensemble mean', linestyle='-', 
+        bool=False, color='#515151', label='Ensemble mean', linestyle='-', 
         lw=3), 
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250227_continueRemaking/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(
@@ -169,23 +171,27 @@ ppar_exploratory = cg.PlotParams(
                 years_color=('#515151',), years_linestyle=('--',), 
                 years_lw=(1.3,)),
         member_dict=dict(
-                bool=True, exceed_alpha=(0,), exceed_color=('#97215c',), 
-                exceed_linestyle=('--',), exceed_lw=(0.3,), 
+                bool=True, exceed_alpha=(1,), exceed_color=('#515151',), 
+                exceed_linestyle=('--',), exceed_lw=(1.2,), 
                 range_dict=dict(
-                    alpha=0.6, bool=True, color='#d285ae', edgecolor=None, 
+                    alpha=0.6, bool=False, color='#d285ae', edgecolor=None, 
                     range=[0.1, 0.9]), 
                 threshold=(100,), years_alpha=(0,), years_color=('#97215c',), 
                 years_linestyle=('--',), years_lw=(0.3,))),
     rlz_dict=dict(
         bool=True, color='#cccccc', label='Members', linestyle='-', lw=0.5), 
+    # storyline_dict=dict(
+    #     select=[24,52], color=['#b66363', '#2098ae'], 
+    #     label=['member 24', 'member 52'], 
+    #     linestyle=['-', '-'], lw=[1.5, 1.5]),
     storyline_dict=dict(
-        select=[76, 62,], color=['#b66363', '#2098ae'], 
-        label=['member 24', 'member 52'], 
-        linestyle=['-', '-'], lw=[1.5, 1.5]),
+        select=[0.1], color=['#515151'], 
+        label=['member 13',], 
+        linestyle=['-',], lw=[0.5,]),
     title=setp_gdd.reg_oi['reg_str'],
     ts_type='spaghetti', x_label='', x_lim=[1850, 2100], 
     y_label='exceed percent of Preindustrial control years', y_lim=[0, 100.05])
-ppar_to_use = ppar_exploratory
+ppar_to_use = ppar_forced_range_storyline2452
 
 dict_data = fproc.common_opener(dp=dp_gdd, setp=setp_gdd)
 da_data_roi = dict_data['roi'].compute()
@@ -220,9 +226,14 @@ if setp_gdd.window is None:
         np_exceed, x_d=years_to_plot, ppar=ppar_to_use)
 else:
     l_exceed_rolling_avg = list()
-    for rlz in np.arange(0, len(da_data_roi.realization)):
-        rolling_avg = fproc.moving_average(np_exceed[:, rlz], setp_gdd.window)
-        l_exceed_rolling_avg.append(rolling_avg)
+    try:
+        for rlz in np.arange(0, len(da_data_roi.realization)):
+            rolling_avg = fproc.moving_average(
+                np_exceed[:, rlz], setp_gdd.window)
+            l_exceed_rolling_avg.append(rolling_avg)
+    except AttributeError:
+        l_exceed_rolling_avg.append(
+            fproc.moving_average(np_exceed, setp_gdd.window))
     plot_this = np.array(l_exceed_rolling_avg).T
     years_windows_plot = years_to_plot[:-(setp_gdd.window - 1)]
     ppar_to_use.o_name = str(setp_gdd.window) + 'yrwindow_' \

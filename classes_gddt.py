@@ -191,7 +191,7 @@ class PlotParams:
         color_comp='#ff4444', comp_hist_bool=False, comp_label='', 
         dpi=400, edgecolors=None, figsize=(10, 4), frame_flag=False, 
         kde_bool=False, label=None, leg_bool=False, linestyle='--', lw=2, 
-        marker_size=8, marker='o', 
+        marker_size=8, marker='o',
         mn_dict=dict(bool=False, color='', label='', linestyle='--', lw=3),
         o_bool=True, o_name=None, o_path='', o_prefix='', 
         plot_as_percent=False, plot_crossover_dict=dict(
@@ -205,7 +205,7 @@ class PlotParams:
                     alpha=None, bool=False, edgecolor=None, range=[]), 
                 years_alpha=(), years_color=(), years_linestyle=(), 
                 years_lw=())),
-        plot_each_member=False, proj=None, 
+        plot_each_member=False, proj=None, quantile=False,
         rlz_dict=dict(
             bool=False, color='', label='', linestyle='', lw=0.5,),
         set_bad=True, stat='count', storyline_dict=dict(
@@ -340,6 +340,7 @@ class PlotParams:
                     one entry, use same values for all; otherwise, must
                     match threshold key entry in length. (default: ())
         proj: map projection or set_proj keyword (default: None)
+        quantile: quantile to plot or False (default: False)
         rlz_dict: dict for realization aesthetics on plots where 
             ensemble mean and realizations are distinct (e.g., 
             timeseries, histogram)
@@ -411,6 +412,7 @@ class PlotParams:
         self.plot_each_member = plot_each_member
         self.plot_crossover_dict = plot_crossover_dict
         self.proj = proj
+        self.quantile = quantile
         self.rlz_dict = rlz_dict
         self.set_bad = set_bad
         self.stat = stat

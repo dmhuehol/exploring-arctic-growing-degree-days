@@ -13,7 +13,7 @@ import sys
 import cartopy.crs as ctcrs
 import cartopy.feature as cfeat
 import cartopy.util as cutil
-import cmasher
+import cmasher as cmr
 import cmocean
 import cv2
 from icecream import ic
@@ -758,6 +758,28 @@ def balance_n(n=9):
         'balance_' + str(n), d_rgb, N=n)
 
     return cmap_balancen
+
+def crossover_n(n=10):
+    ''' n-color discrete diverging palette from cmasher waterlily_r, 
+    with central values replaced by gray '''
+    waterlily_sub_cmap = cmr.get_sub_cmap('cmr.waterlily_r', 0.1, 0.9, N=10)
+    waterlilyr_colors = waterlily_sub_cmap.colors
+    #  Gray
+    # waterlilyr_colors[int(n / 2) - 1] = (163 / 255, 163 / 255, 163 / 255)
+    # waterlilyr_colors[int(n / 2)] = (163 / 255, 163 / 255, 163 / 255)
+    #  Yellow
+    # waterlilyr_colors[int(n / 2) - 1] = (249 / 255, 231 / 255, 159 / 255)
+    # waterlilyr_colors[int(n / 2)] = (249 / 255, 231 / 255, 159 / 255)
+    #  Yellow-gray
+    waterlilyr_colors[int(n / 2) - 1] = (199 / 255, 184 / 255, 127 / 255)
+    waterlilyr_colors[int(n / 2)] = (199 / 255, 184 / 255, 127 / 255)
+    #  Pink
+    # waterlilyr_colors[int(n / 2) - 1] = (255 / 255, 204 / 255, 229 / 255)
+    # waterlilyr_colors[int(n / 2)] = (255 / 255, 204 / 255, 229 / 255)
+    crossover_cmap = mcolors.LinearSegmentedColormap.from_list(
+        'crossover_' + str(n), waterlilyr_colors, N=n)
+    
+    return crossover_cmap
 
 def diff_n(n=9):
     ''' n-color discrete diverging palette from cmocean diff '''

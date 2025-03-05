@@ -585,25 +585,39 @@ def prep_guide(da_to_guide, gp):
 def exceed_subceed(np_x1, np_x2):
     ''' Calculate exceedance and subceedance (Gexc and Gsub) for two 
     samples of realizations. '''
-    l_above = list()
-    l_below = list()
-    #  Compares each np_x2 element to every np_x1 element. Sadly, I have yet to
-    #  think of a way to do this without a loop!
-    for x2c, x2_rlz in enumerate(np_x2):
-        # if x2c % 10 == 0:
-            # ic(cg.TrackProg(cli=x2c, iter=np_x2).message(prefix='gexc '))
-        x1gtx2 = np_x1 > x2_rlz
-        x1ltx2 = np_x1 < x2_rlz
+    #  If the only dimensions are lat/lon. This logic is far from 
+    #  bulletproof, but it's the best I've come up with for now 
+    #  without explicit dimension checking using xarray objects.
+    if len(np.shape(np_x2)) == 2:
+        x1gtx2 = np_x1 > np_x2
+        x1ltx2 = np_x1 < np_x2
         count_x1gtx2 = np.count_nonzero(x1gtx2, axis=0)
         count_x1ltx2 = np.count_nonzero(x1ltx2, axis=0)
-        l_above.append(count_x1ltx2)
-        l_below.append(count_x1gtx2)
-    d_g = {
-        "gexc": l_above,
-        "gsub": l_below
-    }
+        dict_g = {
+            "gexc": count_x1ltx2,
+            "gsub": count_x1gtx2
+        }
+    #  If there is a realization dimension in np_x2
+    else:
+        list_above = list()
+        list_below = list()
+        #  Compares each np_x2 element to every np_x1 element. Sadly, I 
+        #  have yet to think of a way to do this without a loop!
+        for x2c, x2_rlz in enumerate(np_x2):
+            # if x2c % 10 == 0:
+                # ic(cg.TrackProg(cli=x2c, iter=np_x2).message(prefix='gexc '))
+            x1gtx2 = np_x1 > x2_rlz
+            x1ltx2 = np_x1 < x2_rlz
+            count_x1gtx2 = np.count_nonzero(x1gtx2, axis=0)
+            count_x1ltx2 = np.count_nonzero(x1ltx2, axis=0)
+            list_above.append(count_x1ltx2)
+            list_below.append(count_x1gtx2)
+        dict_g = {
+            "gexc": list_above,
+            "gsub": list_below
+        }
     
-    return d_g
+    return dict_g
 
 def roll_window(list_windows):
     ''' Roll list of windows into a DataArray '''

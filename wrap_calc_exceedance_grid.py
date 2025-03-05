@@ -56,29 +56,48 @@ years = da_rlz.year.data
 list_exceed = list()
 for year_count, year in enumerate(years):
     #  Helps track progress
-    ic(year)
+    ic(year, np.shape(list_exceed))
     da_rlz_year = da_rlz.sel(year=year)
     np_compare_to_base = da_rlz_year.data
     dict_g = fproc.exceed_subceed(np_base_samples, np_compare_to_base)
     np_gexc = np.array(dict_g['gexc'])
     list_exceed.append(np_gexc)
-    ic(np.shape(list_exceed))
 np_exceed_yearlatlon = np.stack(list_exceed, axis=0)
-ds_exceed = xr.Dataset(
-    data_vars = {
-        "exceedance": (
-            ("year", "realization", "lat", "lon"), np_exceed_yearlatlon),       
-    },
-    coords = {
-        "year": years,
-        "realization": da_rlz.realization.data,
-        "lon": da_rlz.lon.data,
-        "lat": da_rlz.lat.data
-    },
-    attrs = {
-        "long_name": 'exceedance',
-    }
-)
+#  For data with realization dimension
+try:
+    ds_exceed = xr.Dataset(
+        data_vars = {
+            "exceedance": (
+                ("year", "realization", "lat", "lon"), np_exceed_yearlatlon),       
+        },
+        coords = {
+            "year": years,
+            "realization": da_rlz.realization.data,
+            "lon": da_rlz.lon.data,
+            "lat": da_rlz.lat.data
+        },
+        attrs = {
+            "long_name": 'member exceedance',
+            "length_of_base_period": len(np_base_samples)
+        }
+    )
+#  For data with no realization dimension
+except AttributeError:
+    out_name = 'ensmn-forced_' + out_name
+    ds_exceed = xr.Dataset(
+        data_vars = {
+            "exceedance": (("year", "lat", "lon"), np_exceed_yearlatlon),       
+        },
+        coords = {
+            "year": years,
+            "lon": da_rlz.lon.data,
+            "lat": da_rlz.lat.data
+        },
+        attrs = {
+            "long_name": 'unknown',
+            "length_of_base_period": len(np_base_samples)
+        }
+    )
 ic(ds_exceed)
 if out_flag:
     ic(out_path + out_name)

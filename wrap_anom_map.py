@@ -15,8 +15,8 @@ import fun_plots as fpl
 import gddt_region_library as g_rlib
 xr.set_options(keep_attrs=True)
 
-cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250227_continueRemaking/'
-cmn_yrs = [2082, 2091]
+cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/'
+cmn_yrs = [2057, 2066]
 dp = cg.DataParams(
     path='/Users/dhueholt/Documents/gddt_data/LENS2/monthly_SST/AMJJAS/',
     tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True, 
@@ -24,7 +24,7 @@ dp = cg.DataParams(
     flag_roi=False)
 setp = cg.SetParams(
     dims='realization', mask_flag=None, yrs=cmn_yrs, 
-    yrs_rel_to=cmn_yrs, rlz=76, z_flag=True)
+    yrs_rel_to=cmn_yrs, rlz=20, z_flag=True)
 dp_base = cg.DataParams(
     path='/Users/dhueholt/Documents/gddt_data/LENS2/monthly_SST/AMJJAS/',
     tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True, 

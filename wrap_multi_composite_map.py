@@ -79,7 +79,8 @@ ppar_gdd_ts_gray = cg.PlotParams(
     y_label='GDD base 5', y_lim='auto')
 ppar_gdd_ts = cg.PlotParams( # FRAME
     color='#ff80ed', color_r='#ffa6f2', dpi=400,
-    label='LENS2 members: ', #composite_key added in loop
+    #  composite_key added to label in loop
+    label='LENS2 members: ',
     o_bool=True, o_path=cmn_path, x_label='year', x_lim=[1850, 2100], 
     y_label='GDD base 5', y_lim='auto')
 super_interval = 30
@@ -105,7 +106,7 @@ if __name__=='__main__':
                 "ip": ip,
                 "gp": loop_gp_gdd,
                 "ppar": ppar_base_composite,
-                "ppar_region": ppar_region,
+                "ppar_region": roi,
                 "ppar_super": ppar_super,
                 "ppar_guide_ts_all": ppar_gdd_ts_gray,
                 "ppar_guide_ts": ppar_gdd_ts,
