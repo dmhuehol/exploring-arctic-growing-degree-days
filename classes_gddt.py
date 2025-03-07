@@ -468,9 +468,9 @@ class SetParams:
     __init__: Initiate an instance of the class with attributes
     '''  
     def __init__(
-        self, area_stat=None, base_yrs=None, beat=None,
-        dims=['SpecifyDims',], mask='', mask_flag=None, reg_oi=None, 
-        rlz='', window=None, yrs=[], yrs_rel_to=[], z_flag=False):
+        self, area_stat=None, base_yrs=None, dims=['SpecifyDims',], mask='', 
+        mask_flag=None, match_type=None, reg_oi=None, rlz='', window=None, 
+        yrs=[], yrs_rel_to=[], z_flag=False):
         ''' Constructor for SetParams class.
         Keyword arguments:
         By default, configured for global data over 1850-1859 relative
@@ -483,6 +483,7 @@ class SetParams:
             'realization'], default: ['SpecifyDims',])
         mask: landmask file path (default: '')
         mask_flag: str or list for fields to mask on (default: None)
+        match_type: match 'geq', 'leq', 'eq' (default: None)
         reg_oi: 'global' or gddt_region_library object (default: None)
         rlz: see manage_rlz for valid settings (default: '')
         window: years for window function (default: None)
@@ -496,6 +497,7 @@ class SetParams:
         self.dims = dims
         self.mask = mask
         self.mask_flag = mask_flag
+        self.match_type = match_type
         self.reg_oi = reg_oi
         self.rlz = rlz
         self.window = window

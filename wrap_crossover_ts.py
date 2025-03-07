@@ -65,7 +65,7 @@ ppar_forced_range_storyline2452 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250306_crossovercomposites/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(
@@ -199,22 +199,9 @@ dict_base = fproc.common_opener(dp=dp_gdd_base, setp=setp_gdd_base)
 da_base_roi = dict_base['roi'].compute()
 da_base_period = da_base_roi.sel(
     year=slice(setp_gdd.base_yrs[0], setp_gdd.base_yrs[1]))
-np_base_samples = np.ravel(da_base_period.data)
 years_to_plot = np.arange(setp_gdd.yrs[0], setp_gdd.yrs[1] + 1)
-#  Note that "exceedance" is synonymous with Gexc in robustness from 
-#  Hueholt et al. 2022. I think the term "exceedance" is clearer here;
-#  in this calculation the subceedance term is not used so there's no
-#  need for nomenclature that includes both.
-list_exceed = list()
-for loop_yr in years_to_plot:
-    da_loop_yr = da_data_roi.sel(year=loop_yr)
-    np_compare_to_base = da_loop_yr.data
-    dict_g = fproc.exceed_subceed(np_base_samples, np_compare_to_base)
-    list_exceed.append(np.array(dict_g['gexc']))
-if ppar_to_use.plot_as_percent:
-    np_exceed = np.array(list_exceed) / len(np_base_samples) * 100.
-else:
-    np_exceed = np.array(list_exceed)
+np_exceed, l_exceed_rolling_avg = fproc.common_calc_exceed(
+    da_data_roi, da_base_period, years_to_plot, ppar_to_use, setp_gdd)
 
 plt.figure()
 plt.rcParams.update({'font.family': 'Catamaran'})
@@ -225,15 +212,6 @@ if setp_gdd.window is None:
     fpl.plot_exceed_crossover_ts(
         np_exceed, x_d=years_to_plot, ppar=ppar_to_use)
 else:
-    l_exceed_rolling_avg = list()
-    try:
-        for rlz in np.arange(0, len(da_data_roi.realization)):
-            rolling_avg = fproc.moving_average(
-                np_exceed[:, rlz], setp_gdd.window)
-            l_exceed_rolling_avg.append(rolling_avg)
-    except AttributeError:
-        l_exceed_rolling_avg.append(
-            fproc.moving_average(np_exceed, setp_gdd.window))
     plot_this = np.array(l_exceed_rolling_avg).T
     years_windows_plot = years_to_plot[:-(setp_gdd.window - 1)]
     ppar_to_use.o_name = str(setp_gdd.window) + 'yrwindow_' \

@@ -1,7 +1,9 @@
-'''wrap_calc_exceedance_grid
+''' wrap_calc_exceedance_grid
 Script to calculate exceedance for gridded data and save as a netCDF 
 file. These files can then be used to make maps of crossover and
-no-analog states by applying different thresholds.
+no-analog states by applying different thresholds. To calculate 
+a gridded file of crossover year from exceedance data, see
+wrap_calc_crossover_grid.
 '''
 import sys
 

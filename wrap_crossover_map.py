@@ -12,9 +12,9 @@ Plot crossover year on a map:
         This is a special case of member crossover for a threshold of 
         100% exceedance of the preindustrial base period.
 
-This requires an existing pre-calculated gridded file of exceedance 
-information with dimensions rlz, time, lat, lon. See 
-wrap_calc_exceedance_grid to make this file.
+This requires a pre-calculated gridded file of exceedance information 
+with dimensions time, lat, lon (and realizations optional). To make this
+file, see wrap_calc_exceedance_grid.
 
 The calculation itself addresses the question: "How many samples in one 
 period (np_compare_to_base) exceed the samples from a baseline 
@@ -44,7 +44,7 @@ import fun_calc_var as fcv
 import fun_plots as fpl
 import fun_process as fproc
 
-cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/'
+cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250306_crossovercomposites/'
 paint_shapefile_bool = True
 #  Exceedance information calculated from wrap_calc_exceedance_grid
 dp_exceedance = cg.DataParams(
@@ -90,18 +90,19 @@ ppar_crossover = cg.PlotParams(
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False, ),
         member_dict=dict(bool=True, threshold=(100,),),),
-    plot_each_member=False, proj='Arctic', quantile=0.5, title='', 
+    plot_each_member=False, proj='Arctic', quantile=0.9, title='', 
     title_size=10)
 #  Plot parameters for image muting based on active layer
 ppar_altmask = cg.PlotParams(
     alpha=0.6, cb_bool=False, cb_extent='neither', cb_label='auto', 
-    cb_vals=[-10, 0], cmap=cm['Greys'], dpi=800, figsize=(5,4), o_bool=True,
+    cb_vals=[-10, 0], cmap=cm['Greys'], dpi=800, figsize=(10, 4), o_bool=True,
     o_name='', o_path=cmn_path, o_prefix='', plot_each_member=False,
     proj='Arctic', set_bad=False, title='', title_size=11)
 #  Plot parameters for shapefile if using shapefile
+#  Match cmap here to whichever is in use above in ppar_crossover
 ppar_shapefile = cg.PlotParams(
-    cmap=cmap, o_prefix='', title='Arctic ecoregions by crossover year',
-    title_size=12)
+    cmap=cmr.get_sub_cmap('cmr.torch_r', 0.15, 0.85, N=10), o_prefix='', 
+    title='Arctic ecoregions by crossover year', title_size=12)
 
 dict_exceed = fproc.common_opener(dp=dp_exceedance, setp=setp_exceedance)
 da_exceed = dict_exceed['land_mask'].compute()
@@ -109,8 +110,11 @@ da_exceed = dict_exceed['land_mask'].compute()
 if np.max(da_exceed.data) > 100:
     ic(dict_exceed['raw_ds'].length_of_base_period)
     da_exceed = da_exceed / dict_exceed['raw_ds'].length_of_base_period * 100
-da_rolling = da_exceed.rolling(
-    year=setp_exceedance.window).mean().dropna('year')
+if setp_exceedance.window is not None:
+    da_rolling = da_exceed.rolling(
+        year=setp_exceedance.window).mean().dropna('year')
+else:
+    da_rolling = da_exceed
 lat = da_rolling.lat.data
 lon = da_rolling.lon.data
 rlzs = da_rolling.realization.data

@@ -160,7 +160,7 @@ def common_opener(dp=cg.DataParams(), setp=cg.SetParams()):
             time_slice = slice(setp.yrs[0], setp.yrs[1])
             da_toi = da_in.sel(year=time_slice)
         open_d['time_slice'] = da_toi
-      
+
     da_rlz = da_toi
     if dp.flag_manage_rlz:
         da_rlz = manage_rlz(da_toi, setp)
@@ -178,6 +178,43 @@ def common_opener(dp=cg.DataParams(), setp=cg.SetParams()):
         open_d['loc_str'] = loc_str
 
     return open_d
+
+def common_calc_exceed(
+        da_calc_exceed, da_base_period, years_to_calc, ppar, setp):
+    ''' Calculate exceedance and apply moving average. This feels a bit 
+    conceptually overloaded--but it's a use case that several scripts
+    need and modularizing it prevents each script from calling a 
+    slightly different implementation of this code!
+    '''
+    np_base_samples = np.ravel(da_base_period.data)
+    #  Note that "exceedance" is synonymous with Gexc in robustness from 
+    #  Hueholt et al. 2022. I think the term "exceedance" is clearer here;
+    #  in this calculation the subceedance term is not used so there's no
+    #  need for nomenclature that includes both.
+    list_exceed = list()
+    for loop_yr in years_to_calc:
+        da_loop_yr = da_calc_exceed.sel(year=loop_yr)
+        np_compare_to_base = da_loop_yr.data
+        dict_g = exceed_subceed(np_base_samples, np_compare_to_base)
+        list_exceed.append(np.array(dict_g['gexc']))
+    if ppar.plot_as_percent:
+        np_exceed = np.array(list_exceed) / len(np_base_samples) * 100.
+    else:
+        np_exceed = np.array(list_exceed)
+
+    if setp.window is not None:
+        l_exceed_rolling_avg = list()
+        try:
+            for rlz in np.arange(0, len(da_calc_exceed.realization)):
+                rolling_avg = moving_average(
+                    np_exceed[:, rlz], setp.window)
+                l_exceed_rolling_avg.append(rolling_avg)
+        except AttributeError:
+            l_exceed_rolling_avg.append(moving_average(np_exceed, setp.window))
+    else:
+        l_exceed_rolling_avg = None
+    
+    return np_exceed, l_exceed_rolling_avg
 
 def check_in_dist(dist_list, val):
     ''' Check if value is in list. Useful for checking a value against
@@ -233,7 +270,7 @@ def get_params(type='', cmn_path=''):
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = None
             if cmn_path == '':
-                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250225_remakingFigures/'
+                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250306_crossovercomposites/'
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/',
@@ -461,15 +498,22 @@ def make_polygon_mask(lats, lons, reg_lats, reg_lons):
 
     return grid_mask
 
-def match_rlz_quantiles(data_rlz, quantile):
+def match_rlz_quantiles(data_rlz, quantile, type='eq'):
     ''' Match realizations to quantile (e.g., identify storylines) '''
     if np.isnan(quantile):
         members_quantile = np.isnan(data_rlz) * 1
         indices_quantile = np.nonzero(members_quantile)
     else:
         data_quantile = np.nanquantile(data_rlz, quantile)
-        members_quantile = data_rlz == np.round(data_quantile)
-        indices_quantile = np.nonzero(members_quantile)
+        if type == 'equal':
+            members_quantile = data_rlz == np.round(data_quantile)
+        elif type == 'leq':
+            members_quantile = data_rlz <= np.round(data_quantile)
+        elif type == 'geq':
+            members_quantile = data_rlz >= np.round(data_quantile)
+        else: 
+            raise ValueError('Improper value for type input')
+        indices_quantile = np.squeeze(np.nonzero(members_quantile))
     msg_quantile = 'Indices matching ' + str(quantile) + ' quantile: ' \
         + str(indices_quantile)
     ic(msg_quantile)

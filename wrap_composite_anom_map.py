@@ -1,7 +1,7 @@
 '''wrap_composite_anom_map
 Script to composite and plot anomalies in one field based on properties
 of another guiding variable. Optionally, pairs the composite plot with a 
-timeseries of the guiding varaiables in the relevant time period and 
+timeseries of the guiding variables in the relevant time period and 
 region.
 
 This is configured to make composites of SST based on properties of 
