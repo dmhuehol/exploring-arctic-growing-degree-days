@@ -65,7 +65,7 @@ ppar_forced_range_storyline2452 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250306_crossovercomposites/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(
@@ -103,7 +103,7 @@ ppar_storyline24 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
@@ -131,7 +131,7 @@ ppar_storyline52 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
@@ -159,7 +159,7 @@ ppar_exploratory = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/',
+    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(

@@ -270,7 +270,7 @@ def get_params(type='', cmn_path=''):
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = None
             if cmn_path == '':
-                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250306_crossovercomposites/'
+                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250307_finalfigs/'
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/',
@@ -497,6 +497,23 @@ def make_polygon_mask(lats, lons, reg_lats, reg_lons):
     grid_mask = flat_mask.reshape((len(lats),len(lons)))
 
     return grid_mask
+
+def match_rlz_extremes(data_rlz, extreme=''):
+    ''' Match realizations to absolute extremes (e.g., 'max10' or 'min10' 
+    indices) '''
+    if 'max' in extreme:
+        max_n = int(extreme.replace('max',''))
+        indices_extreme = np.argsort(data_rlz)[-max_n:]
+    elif 'min' in extreme:
+        min_n = int(extreme.replace('min',''))
+        indices_extreme = np.argsort(data_rlz)[:min_n]
+    else:
+        raise ValueError('Invalid entry for extreme!')
+    msg_extreme = 'Indices matching ' + extreme + ': ' + str(indices_extreme)
+    ic(msg_extreme)
+        
+    return indices_extreme
+
 
 def match_rlz_quantiles(data_rlz, quantile, type='eq'):
     ''' Match realizations to quantile (e.g., identify storylines) '''

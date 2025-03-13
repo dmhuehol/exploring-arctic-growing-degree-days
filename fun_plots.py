@@ -561,7 +561,7 @@ def apply_params_hist(ppar):
         if 'Failed to convert' in e.__str__():
             plt.yticks()
         else:
-            sys.exit('Unknown error! ' + e.__str__())
+            sys.exit('Unknown error! ' + e.__str__())    
     if ppar.leg_bool:
         plt.legend()
     if ppar.o_bool:
@@ -604,9 +604,13 @@ def apply_params_ts(ppar):
         else:
             sys.exit('Unknown error! ' + e.__str__())
     try:
-        plt.yticks(ppar.yticks)
+        # plt.yticks(ticks=ppar.yticks, labels=[])
+        plt.yticks(ticks=ppar.yticks)
     except Exception as e:
         if 'Failed to convert' in e.__str__():
+            # locs, labels = plt.yticks()
+            # ic(locs)
+            # plt.yticks(ticks=locs, labels=[])
             plt.yticks()
         else:
             sys.exit('Unknown error! ' + e.__str__())

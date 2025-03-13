@@ -46,7 +46,7 @@ plot_require_whole = False
 #  List of station IDs, or 'auto' to plot all available; matches Fig. 5
 stid = ['UKE00105900', 'CA002403206', 'SWE00139842', 'SWE00138226',
         'RSM00021982', 'RSM00024688']
-o_path = '/Users/dhueholt/Documents/gddt_fig/20250207_updateLastToClasses/'
+o_path = '/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/'
 
 df_sc = fg.get_spancov(scp)
 n_st = ic(len(df_sc))
@@ -73,7 +73,8 @@ for atyc, aty in enumerate(ip.intervals):
         df_tslc = df_dt.filter(
             pl.col("DATETIME").is_between(t_slc[0], t_slc[1]))
         np_gdd = df_tslc.select(pl.col('GDD_SUM')).to_numpy()
-        np_yrs = df_tslc.select(pl.col('DATETIME')).to_series().dt.year().to_numpy()
+        np_yrs = df_tslc.select(
+            pl.col('DATETIME')).to_series().dt.year().to_numpy()
         if cg.Sentinel(data=np_yrs, match=aty).not_in_span():
             if plot_require_whole:
                 continue
@@ -88,18 +89,22 @@ for atyc, aty in enumerate(ip.intervals):
         plt.rcParams.update({'font.size': 10})
         fig, ax1 = plt.subplots()
         ppar_gdd = cg.PlotParams(
-            color='#ff80ed', o_bool=False, o_path=o_path, o_name=cmn_name, 
+            color='#6f8c31', o_bool=False, o_path=o_path, o_name=cmn_name, 
             title=cmn_title, x_label='year', x_lim='auto',
-            y_label='GDD base 5', y_lim='fix_nonnegative')
+            y_label='GDD base 5', y_lim='fix_nonnegative',)
         ppar_ndd = cg.PlotParams(
             color='#cccccc', o_bool=True, o_path=o_path, o_name=cmn_name, 
             title=cmn_title, y_label='Missing days', y_lim=[0, 366], 
             yticks=np.arange(0, 365 + 73, 73))
+        #  By default, plot with y-tick labels; for the paper figures, 
+        #  I disable these manually in fp.apply_params_ts and add them
+        #  back in Keynote for aesthetics.
         fp.plot_timeseries(np_gdd, x_d=np_yrs, ppar=ppar_gdd)
         if plot_linearreg:
             ppar_lr = cg.PlotParams(
-                color='#ce4a4a', label='linear', leg_bool=True, o_bool=False, o_path=o_path, o_name=cmn_name, 
-                title=cmn_title, x_label='year', x_lim='auto', y_label='GDD base 5')
+                color='#ce4a4a', label='linear', leg_bool=True, o_bool=False, 
+                o_path=o_path, o_name=cmn_name, title=cmn_title, 
+                x_label='year', x_lim='auto', y_label='GDD base 5')
             fp.plot_timeseries(lr_data, x_d=np_yrs, ppar=ppar_lr)
         if act_cov < 100:
             ax2 = ax1.twinx()

@@ -12,9 +12,10 @@ Plot crossover year on a map:
         This is a special case of member crossover for a threshold of 
         100% exceedance of the preindustrial base period.
 
-This requires a pre-calculated gridded file of exceedance information 
+This requires a pre-calculated gridded file of crossover information 
 with dimensions time, lat, lon (and realizations optional). To make this
-file, see wrap_calc_exceedance_grid.
+file, run wrap_calc_exceedance_grid followed by 
+wrap_calc_crossover_grid.
 
 The calculation itself addresses the question: "How many samples in one 
 period (np_compare_to_base) exceed the samples from a baseline 
@@ -44,14 +45,15 @@ import fun_calc_var as fcv
 import fun_plots as fpl
 import fun_process as fproc
 
-cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250306_crossovercomposites/'
+cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250307_finalfigs/'
 paint_shapefile_bool = True
-#  Exceedance information calculated from wrap_calc_exceedance_grid
-dp_exceedance = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/LENS2/exceedance/', 
-    tok='gexc_1850-2100_base0-2000.nc', var='exceedance', 
-    flag_raw_ds=True, flag_raw_da=True, flag_time_slice=True, 
-    flag_manage_rlz=True, flag_land_mask=True, flag_roi=False)
+#  Crossover information calculated from wrap_calc_exceedance_grid 
+#  followed by wrap_calc_crossover_grid
+dp_crossover = cg.DataParams(
+    path='/Users/dhueholt/Documents/gddt_data/LENS2/exceedance/crossover/', 
+    tok='forcedcrossover_threshold80.nc', var='crossover', 
+    flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False, 
+    flag_manage_rlz=True, flag_land_mask=True, flag_roi=True)
 #  ALTMAX (active layer depth) used to mask bedrock and permafrost. In
 #  practice this has minimal impact, but it's still useful to note!
 dp_altmax = cg.DataParams(
@@ -60,9 +62,10 @@ dp_altmax = cg.DataParams(
     flag_time_slice=False, flag_manage_rlz=False, 
     flag_land_mask=False, flag_roi=False)
 #  TODO: do these inputs behave as expected? How much is this needed?
-setp_exceedance = cg.SetParams(
-    area_stat='pass', base_yrs=[0, 2000], mask_flag='none',
-    reg_oi='global', rlz='all', window=10, yrs=[1850, 2100])
+setp_crossover = cg.SetParams(
+    area_stat='pass', base_yrs=[0, 2000], 
+    mask='/Users/dhueholt/Documents/gddt_data/mask/cesm_atm_mask.nc', 
+    mask_flag='land', reg_oi='global', rlz='all', yrs=[1850, 2100])
 setp_altmax = cg.SetParams(
     area_stat='pass', mask_flag='land', reg_oi='global', rlz='all', 
     yrs=[1850, 2100])
@@ -83,19 +86,18 @@ setp_altmax = cg.SetParams(
 #      quantile=0.5
 ppar_crossover = cg.PlotParams(
     cb_bool=True, cb_extent='neither', cb_label='crossover year', 
-    cb_vals=[2050, 2100], 
-    cmap=cmr.get_sub_cmap('cmr.torch_r', 0.15, 0.85, N=10), dpi=800, 
-    figsize=(5,4), o_bool=True, o_name='LENS2_crossoveryear', o_path=cmn_path, 
-    o_prefix='', 
+    cb_vals=[2000, 2050], 
+    cmap=fpl.crossover_n(n=10), dpi=800, 
+    figsize=(5,4), o_bool=True, o_name='', o_path=cmn_path, o_prefix='', 
     plot_crossover_dict=dict(
-        forced_dict=dict(bool=False, ),
-        member_dict=dict(bool=True, threshold=(100,),),),
-    plot_each_member=False, proj='Arctic', quantile=0.9, title='', 
+        forced_dict=dict(bool=True, threshold=(80,)),
+        member_dict=dict(bool=False, threshold=(100,),),),
+    plot_each_member=False, proj='Arctic', quantile=None, title='', 
     title_size=10)
 #  Plot parameters for image muting based on active layer
 ppar_altmask = cg.PlotParams(
     alpha=0.6, cb_bool=False, cb_extent='neither', cb_label='auto', 
-    cb_vals=[-10, 0], cmap=cm['Greys'], dpi=800, figsize=(10, 4), o_bool=True,
+    cb_vals=[-10, 0], cmap=cm['Greys'], dpi=800, figsize=(5,4), o_bool=True,
     o_name='', o_path=cmn_path, o_prefix='', plot_each_member=False,
     proj='Arctic', set_bad=False, title='', title_size=11)
 #  Plot parameters for shapefile if using shapefile
@@ -104,85 +106,37 @@ ppar_shapefile = cg.PlotParams(
     cmap=cmr.get_sub_cmap('cmr.torch_r', 0.15, 0.85, N=10), o_prefix='', 
     title='Arctic ecoregions by crossover year', title_size=12)
 
-dict_exceed = fproc.common_opener(dp=dp_exceedance, setp=setp_exceedance)
-da_exceed = dict_exceed['land_mask'].compute()
-#  Ensure exceedance is in percent before calculating/plotting crossover
-if np.max(da_exceed.data) > 100:
-    ic(dict_exceed['raw_ds'].length_of_base_period)
-    da_exceed = da_exceed / dict_exceed['raw_ds'].length_of_base_period * 100
-if setp_exceedance.window is not None:
-    da_rolling = da_exceed.rolling(
-        year=setp_exceedance.window).mean().dropna('year')
-else:
-    da_rolling = da_exceed
-lat = da_rolling.lat.data
-lon = da_rolling.lon.data
-rlzs = da_rolling.realization.data
-years = da_rolling.year.data
-if ppar_crossover.plot_crossover_dict['member_dict']['bool']:
-    np_crossover = np.full((len(rlzs), len(lat), len(lon)), np.nan)
-elif ppar_crossover.plot_crossover_dict['forced_dict']['bool']:
-    np_crossover = np.full((len(lat), len(lon)), np.nan)
-#  Reversing years for loop ensures the result is the first year beyond 
-#  the threshold (crossover).
-reverse_years = np.flip(years)
-list_crossover_rlz = list()
-for year_count, year in enumerate(reverse_years):
-    if ppar_crossover.plot_crossover_dict['forced_dict']['bool']:
-        loop_gexc = da_rolling.sel(year=year).mean(dim='realization')
-        if year_count == 0:
-            crossover_threshold = ppar_crossover.plot_crossover_dict[
-                'forced_dict']['threshold'][0]
-            msg_crossover = 'Plotting forced crossover at ' \
-                + str(crossover_threshold) + '% threshold'
-            ppar_crossover.o_name = 'forcedcrossover_' + ppar_crossover.o_name
-            ppar_crossover.o_name = ppar_crossover.o_name + 'threshold' \
-                + str(crossover_threshold)
-            ppar_crossover.title = 'LENS2 forced crossover (ensemble mean >' \
-                + str(crossover_threshold) + '% of Preindustrial samples)'
-            ic(msg_crossover)
-        crossover = fcv.calc_crossover(
-            loop_gexc, crossover_threshold)
-        np_crossover[crossover] = year
-    elif ppar_crossover.plot_crossover_dict['member_dict']['bool']:
-        if year_count == 0:
-            crossover_threshold = ppar_crossover.plot_crossover_dict[
-                'member_dict']['threshold'][0]
-            if ppar_crossover.quantile is not False:
-                msg_crossover = 'Plotting ' + str(ppar_crossover.quantile) \
-                    + ' quantile member crossover at ' \
-                    + str(crossover_threshold) + '% threshold'
-                ppar_crossover.o_name = 'qoi' + str(ppar_crossover.quantile) \
-                    + 'membercrossover_' + ppar_crossover.o_name
-                ppar_crossover.o_name = ppar_crossover.o_name + 'threshold' \
-                    + str(crossover_threshold)
-                ppar_crossover.title = 'LENS2 '\
-                    + str(ppar_crossover.quantile) \
-                    + ' quantile no-analog state ' \
-                    + '(ensemble member >' + str(crossover_threshold) \
-                    + '% of Preindustrial samples)'
-            else:
-                raise NotImplementedError(
-                    'Only quantile member crossover currently implemented')
-            ic(msg_crossover)
-        loop_gexc = da_rolling.sel(year=year)
-        crossover = fcv.calc_crossover(loop_gexc, crossover_threshold)
+crossover_dict = fproc.common_opener(dp=dp_crossover, setp=setp_crossover)
+da_crossover = crossover_dict['land_mask'].compute()
+crossover_attrs = crossover_dict['raw_ds'].attrs
+if ppar_crossover.plot_crossover_dict['forced_dict']['bool']:
+    msg_crossover = 'Plotting forced crossover at ' \
+        + str(crossover_attrs['threshold']) + '% threshold'
+    ppar_crossover.o_name = 'forcedcrossover_LENS2_threshold' \
+        + str(crossover_attrs['threshold'])
+    ppar_crossover.title = 'LENS2 forced crossover (ensemble mean >' \
+        + str(crossover_attrs['threshold']) + '% of Preindustrial samples'
+elif ppar_crossover.plot_crossover_dict['member_dict']['bool']:
+    msg_crossover = 'Plotting member crossover at quantile ' \
+        + str(ppar_crossover.quantile) + ' with ' \
+        + str(crossover_attrs['threshold']) + '% threshold'
+    ppar_crossover.o_name = 'qoi' + str(ppar_crossover.quantile) \
+        + 'membercrossover_LENS2_threshold' \
+        + str(crossover_attrs['threshold'])
+    ppar_crossover.title = 'LENS2 ' + 'qoi' + str(ppar_crossover.quantile) \
+        + ' member crossover (member >' + str(crossover_attrs['threshold']) \
+        + '% of Preindustrial samples'
+    if ppar_crossover.quantile is not False:
+        da_crossover = da_crossover.quantile(
+            ppar_crossover.quantile, dim='realization', skipna=True)
     else:
-        ic()
-    np_crossover[crossover] = year
-if ppar_crossover.quantile is not False:
-    ic(np_crossover, np.shape(np_crossover))
-    np_crossover = np.nanquantile(
-        np_crossover, ppar_crossover.quantile, axis=0)
-
-ic(np_crossover, np.shape(np_crossover))
-da_crossover = xr.DataArray(
-    data=np_crossover,
-    dims=["lat", "lon"],
-    coords={"lat": lat, "lon": lon},
-    attrs={"units": 'year'}
-)
-name_dict = fproc.namer(dict_exceed["raw_da"], setp_exceedance)
+        raise NotImplementedError(
+            'Member crossover only implemented for quantiles.')
+else:
+    raise ValueError(
+        'Check inputs! Ensure forced OR member crossover are not None.')
+ic(msg_crossover)
+name_dict = fproc.namer(crossover_dict["raw_da"], setp_crossover)
 
 ppar_crossover.o_name = ppar_crossover.o_prefix + ppar_crossover.o_name
 ic(ppar_crossover.o_name, ppar_crossover.title)

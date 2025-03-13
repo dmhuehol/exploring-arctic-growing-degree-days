@@ -189,9 +189,9 @@ class PlotParams:
         cb_extent='neither', cb_label='', cb_ticks=None, cb_vals='auto', 
         cmap=None, coastline_bool=True, color='', color_r='#cccccc', 
         color_comp='#ff4444', comp_hist_bool=False, comp_label='', 
-        dpi=400, edgecolors=None, figsize=(10, 4), frame_flag=False, 
-        kde_bool=False, label=None, leg_bool=False, linestyle='--', lw=2, 
-        marker_size=8, marker='o',
+        dpi=400, edgecolors=None, extreme_n=None, figsize=(10, 4), 
+        frame_flag=False, kde_bool=False, label=None, leg_bool=False, 
+        linestyle='--', lw=2, marker_size=8, marker='o',
         mn_dict=dict(bool=False, color='', label='', linestyle='--', lw=3),
         o_bool=True, o_name=None, o_path='', o_prefix='', 
         plot_as_percent=False, plot_crossover_dict=dict(
@@ -243,6 +243,7 @@ class PlotParams:
         comp_label: label for comparison data (default: '')
         dpi: dpi of output image or 'pdf' for pdf (default: 400)
         edgecolors: edgecolor for scatterplot (default: None)
+        extrem_n: select N most extreme indices (default: None)
         figsize: figure size (default: (10,4))
         frame_flag: true/false plot individual frames (default: True)
         kde_bool: true/false kernel density estimate on hist (default: 
@@ -394,6 +395,7 @@ class PlotParams:
         self.comp_label = comp_label
         self.dpi = dpi
         self.edgecolors = edgecolors
+        self.extreme_n = extreme_n
         self.figsize = figsize
         self.frame_flag = frame_flag
         self.kde_bool = kde_bool
