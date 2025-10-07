@@ -5,7 +5,7 @@ This codebase is primarily intended to support reproducibility of the following 
 It also supports derivation of growing degree days (GDD) from observations the Global Historical Climatology Network (GHCN) and basic analysis of this dataset.
 
 ## Table of Contents
-* Setting up environment(#setting-up-environment)
+* [Setting up environment](#setting-up-environment)
 * [Replicating figures in Hueholt et al. 2025](#replicating-figures-in-hueholt-et-al-2025)  
 * [Workflow to create GDD datasets](#workflow-to-create-gdd-datasets)
   * [GHCN](#ghcn)  
