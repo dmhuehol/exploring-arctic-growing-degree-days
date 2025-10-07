@@ -1,16 +1,20 @@
 # exploring-arctic-growing-degree-days
 This codebase is primarily intended to support reproducibility of the following manuscript:
- * Hueholt, D.M., E.A. Barnes, J.W. Hurrell, D. Lombardozzi, & A. L. Morrison. "Exploring the Influence of Internal Climate Variability and Forced Change on Arctic Greening" *in prep* for submission to One Earth.
+ * Hueholt, D.M., E.A. Barnes, J.W. Hurrell, D. Lombardozzi, & A. L. Morrison. "Exploring the Influence of Internal Climate Variability and Forced Change on Arctic Greening" *in prep*
 
-It also supports creation and basic analysis of datasets of observed growing degree days (GDD) derived from the Global Historical Climatology Network (GHCN). This purpose may be more broadly useful.
+It also supports derivation of growing degree days (GDD) from observations the Global Historical Climatology Network (GHCN) and basic analysis of this dataset.
 
 ## Table of Contents
+* Setting up environment(#setting-up-environment)
 * [Replicating figures in Hueholt et al. 2025](#replicating-figures-in-hueholt-et-al-2025)  
 * [Workflow to create GDD datasets](#workflow-to-create-gdd-datasets)
   * [GHCN](#ghcn)  
   * [CESM](#cesm)  
 * [Code description](#code-description)   
  
+## Setting up environment
+The `pixi.toml` file documents necessary packages for this repository. Because OpenCV is used in this environment, **`conda` cannot be reliably used as the package manager** and packages should be installed using another method.
+
 ## Replicating figures in Hueholt et al. 2025
 To be added.
 
