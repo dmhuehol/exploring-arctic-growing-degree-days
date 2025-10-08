@@ -15,18 +15,19 @@ import fun_plots as fpl
 import gddt_region_library as g_rlib
 xr.set_options(keep_attrs=True)
 
-cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250305_aesthetics/'
-cmn_yrs = [2057, 2066]
+cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/'
+#  Adjust these settings to make Figure 3a and 3b
+cmn_yrs = [2002, 2011]
 dp = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/LENS2/monthly_SST/AMJJAS/',
+    path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/monthly_SST/AMJJAS/',
     tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True, 
     flag_time_slice=True, flag_manage_rlz=True, flag_land_mask=False, 
     flag_roi=False)
 setp = cg.SetParams(
     dims='realization', mask_flag=None, yrs=cmn_yrs, 
-    yrs_rel_to=cmn_yrs, rlz=20, z_flag=True)
+    yrs_rel_to=cmn_yrs, rlz=24, z_flag=True)
 dp_base = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/LENS2/monthly_SST/AMJJAS/',
+    path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/monthly_SST/AMJJAS/',
     tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True, 
     flag_time_slice=True, flag_manage_rlz=True, flag_land_mask=False, 
     flag_roi=False)

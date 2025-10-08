@@ -22,7 +22,7 @@ import fun_process as fproc
 import gddt_region_library as g_rlib
 
 dp_crossover = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/LENS2/exceedance/crossover/', 
+    path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/exceedance/crossover/', 
     tok='membercrossover_threshold90.nc', var='crossover', 
     flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False, 
     flag_manage_rlz=True, flag_land_mask=False, flag_roi=True)
@@ -44,7 +44,7 @@ setp_composite = setp_sst
 ppar_composite_crossover = cg.PlotParams(
     cb_bool=True, cb_extent='neither', cb_label='z', 
     cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], cb_vals=[-0.6, 0.6],
-    cmap=fpl.balance_n(n=18), dpi=800, extreme_n='max20', figsize=(10, 4), 
+    cmap=fpl.balance_n(n=18), dpi=800, extreme_n='min20', figsize=(10, 4), 
     o_bool=True, o_name='LENS2_crossover', o_path=cmn_path, o_prefix='', 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),

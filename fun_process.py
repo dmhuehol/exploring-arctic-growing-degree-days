@@ -235,7 +235,7 @@ def check_in_dist(dist_list, val):
 
 
 def get_arctic_biomes(
-        sf="/Users/dhueholt/Documents/gddt_data/Ecoregions2017/Ecoregions2017.shp"):
+        sf="/Users/danielhueholt/Documents/Data/gddt_data/Ecoregions2017/Ecoregions2017.shp"):
     geo_sf = gp.read_file(sf)
     arctic_biomes = ["Boreal Forests/Taiga", "Tundra", "Rock and Ice"]
     geo_arctic = geo_sf[geo_sf['BIOME_NAME'].isin(arctic_biomes)]
@@ -249,28 +249,28 @@ def get_params(type='', cmn_path=''):
     match type:
         case 'local':
             dp_gdd = cg.DataParams(
-                path='/Users/dhueholt/Documents/gddt_data/gdd/lens2/', 
+                path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/', 
                 tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True, 
                 flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True, 
                 flag_land_mask=False, flag_roi=True)
             dp_gdd_roi_alltimes = cg.DataParams(
-                path='/Users/dhueholt/Documents/gddt_data/gdd/lens2/', 
+                path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/', 
                 tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=False, 
                 flag_raw_da=False, flag_time_slice=False, 
                 flag_manage_rlz=False, flag_land_mask=False, flag_roi=True)
             dp_psl = cg.DataParams(
-                path='/Users/dhueholt/Documents/gddt_data/LENS2/merge_PSL/AMJJAS/',
+                path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/merge_PSL/AMJJAS/',
                 tok='*.nc', var='PSL', flag_raw_ds=True, flag_raw_da=True,
                 flag_time_slice=True, flag_manage_rlz=True, 
                 flag_land_mask=False, flag_roi=False)
             dp_sst = cg.DataParams(
-                path='/Users/dhueholt/Documents/gddt_data/LENS2/monthly_SST/AMJJAS/',
+                path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/monthly_SST/AMJJAS/',
                 tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True,
                 flag_time_slice=True, flag_manage_rlz=True, 
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = None
             if cmn_path == '':
-                cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250307_finalfigs/'
+                cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/'
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/',
@@ -515,7 +515,7 @@ def match_rlz_extremes(data_rlz, extreme=''):
     return indices_extreme
 
 
-def match_rlz_quantiles(data_rlz, quantile, type='eq'):
+def match_rlz_quantiles(data_rlz, quantile, type='equal'):
     ''' Match realizations to quantile (e.g., identify storylines) '''
     if np.isnan(quantile):
         members_quantile = np.isnan(data_rlz) * 1

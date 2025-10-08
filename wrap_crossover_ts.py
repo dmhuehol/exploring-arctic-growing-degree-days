@@ -37,12 +37,12 @@ import gddt_region_library as g_rlib
 roll_windows = cg.IntervalParams().create_intvls(
     strt_yr=1850, end_yr=2101, spn=10, type='rolling')
 dp_gdd = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/gdd/lens2/', 
+    path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/', 
     tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True, 
     flag_raw_da=True, flag_time_slice=False, flag_manage_rlz=True, 
     flag_land_mask=False, flag_roi=True)
 dp_gdd_base = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/gdd/preindustrial/', 
+    path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/preindustrial/', 
     tok='*.nc', var='gdd5_sum', flag_raw_ds=False, flag_raw_da=True, 
     flag_time_slice=True, flag_manage_rlz=True, 
     flag_land_mask=True, flag_roi=True)
@@ -65,7 +65,7 @@ ppar_forced_range_storyline2452 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
+    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(
@@ -103,7 +103,7 @@ ppar_storyline24 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
+    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
@@ -131,7 +131,7 @@ ppar_storyline52 = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
+    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/',
     o_prefix='', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
@@ -159,8 +159,8 @@ ppar_exploratory = cg.PlotParams(
     o_bool=True, o_name='crossover' + '_' + setp_gdd.reg_oi['reg_abv'] \
         + '_base' + str(setp_gdd.base_yrs[0]) + '-' \
         + str(setp_gdd.base_yrs[1]),
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/',
-    o_prefix='', plot_as_percent=True, 
+    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/',
+    o_prefix='exploratory_', plot_as_percent=True, 
     plot_crossover_dict=dict(
         forced_dict=dict(
                 bool=False, exceed_color=('#515151',), 
@@ -174,7 +174,7 @@ ppar_exploratory = cg.PlotParams(
                 bool=True, exceed_alpha=(1,), exceed_color=('#515151',), 
                 exceed_linestyle=('--',), exceed_lw=(1.2,), 
                 range_dict=dict(
-                    alpha=0.6, bool=False, color='#d285ae', edgecolor=None, 
+                    alpha=0.6, bool=True, color='#d285ae', edgecolor=None, 
                     range=[0.1, 0.9]), 
                 threshold=(100,), years_alpha=(0,), years_color=('#97215c',), 
                 years_linestyle=('--',), years_lw=(0.3,))),
@@ -185,13 +185,14 @@ ppar_exploratory = cg.PlotParams(
     #     label=['member 24', 'member 52'], 
     #     linestyle=['-', '-'], lw=[1.5, 1.5]),
     storyline_dict=dict(
-        select=[0.1], color=['#515151'], 
+        select=[13,], color=['#515151',], 
         label=['member 13',], 
         linestyle=['-',], lw=[0.5,]),
     title=setp_gdd.reg_oi['reg_str'],
     ts_type='spaghetti', x_label='', x_lim=[1850, 2100], 
     y_label='exceed percent of Preindustrial control years', y_lim=[0, 100.05])
-ppar_to_use = ppar_forced_range_storyline2452
+#  Choose PlotParams to use here
+ppar_to_use = ppar_exploratory
 
 dict_data = fproc.common_opener(dp=dp_gdd, setp=setp_gdd)
 da_data_roi = dict_data['roi'].compute()

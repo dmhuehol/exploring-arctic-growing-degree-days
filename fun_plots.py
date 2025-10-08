@@ -34,8 +34,8 @@ import fun_process as fproc
 ####  GLOBAL
 ########################################################################
 #  All plotting functions need access to all system fonts
-font_path_local = '/Users/dhueholt/Library/Fonts/'
-font_path_coe_hpc = '/home/dhueholt/fonts/'
+font_path_local = '/Users/danielhueholt/Library/Fonts/'
+font_path_coe_hpc = '/home/danielhueholt/fonts/'
 if os.path.exists(font_path_local):
     for font in fm.findSystemFonts(font_path_local):
         fm.fontManager.addfont(font)
@@ -206,7 +206,7 @@ def plot_hist(lens2_to_plot, comp_to_plot=None, ppar=None):
         ax = sn.histplot(
             data=act_dist, label=per, color=colors[perc % 6], 
             edgecolor=None, stat=ppar.stat, kde=ppar.kde_bool, binwidth=bw)
-        if ppar.mn_bool:
+        if ppar.mn_dict['bool']:
             mn_lens2_areas = np.mean(act_dist)
             plt.plot([mn_lens2_areas, mn_lens2_areas], [0, 1000], color=colors[perc % 6], 
                 linestyle=ppar.linestyle, linewidth=ppar.lw)
@@ -473,7 +473,7 @@ def plot_timeseries_spaghetti(to_plot, x_d, ppar):
             plt.plot(x_d, act_rlz, lw=1, color=ppar.color_r, label=ppar.label)
         else:
             plt.plot(x_d, act_rlz, lw=1, color=ppar.color_r)
-    if ppar.mn_bool:
+    if ppar.mn_dict['bool']:
         rlz_mn = to_plot.mean(dim='realization', skipna=True)
         plt.plot(x_d, rlz_mn, lw=2, color=ppar.color, label='mean')
     #  Manually add a vertical line
@@ -494,7 +494,7 @@ def plot_timeseries_spread(da_to_plot, x_data, ppar):
     plt.fill_between(
         x_data, rlz_max.data, rlz_min.data, color=ppar.color_r, 
         alpha=0.2, linewidth=0)
-    if ppar.mn_bool:
+    if ppar.mn_dict['bool']:
         plt.plot(x_data, rlz_mn, linewidth=2, color=ppar.color)
     ppar.o_name = ppar.o_name.replace('ts', 'ts-spread')
     apply_params_ts(ppar=ppar)

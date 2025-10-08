@@ -45,26 +45,33 @@ import fun_calc_var as fcv
 import fun_plots as fpl
 import fun_process as fproc
 
-cmn_path = '/Users/dhueholt/Documents/gddt_fig/20250307_finalfigs/'
+cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/'
 paint_shapefile_bool = True
 #  Crossover information calculated from wrap_calc_exceedance_grid 
 #  followed by wrap_calc_crossover_grid
+#  DataParams for forced crossover at 80% threshold
 dp_crossover = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/LENS2/exceedance/crossover/', 
+    path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/exceedance/crossover/', 
     tok='forcedcrossover_threshold80.nc', var='crossover', 
     flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False, 
     flag_manage_rlz=True, flag_land_mask=True, flag_roi=True)
+#  DataParams for no-analog crossover
+# dp_crossover = cg.DataParams(
+#     path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/exceedance/crossover/', 
+#     tok='membercrossover_threshold100.nc', var='crossover', 
+#     flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False, 
+#     flag_manage_rlz=True, flag_land_mask=True, flag_roi=True)
 #  ALTMAX (active layer depth) used to mask bedrock and permafrost. In
 #  practice this has minimal impact, but it's still useful to note!
 dp_altmax = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/LENS2/annual_ALTMAX/',
+    path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/annual_ALTMAX/',
     tok='*.nc', var='ALTMAX', flag_raw_ds=False, flag_raw_da=True, 
     flag_time_slice=False, flag_manage_rlz=False, 
     flag_land_mask=False, flag_roi=False)
 #  TODO: do these inputs behave as expected? How much is this needed?
 setp_crossover = cg.SetParams(
     area_stat='pass', base_yrs=[0, 2000], 
-    mask='/Users/dhueholt/Documents/gddt_data/mask/cesm_atm_mask.nc', 
+    mask='/Users/danielhueholt/Documents/Data/gddt_data/mask/cesm_atm_mask.nc', 
     mask_flag='land', reg_oi='global', rlz='all', yrs=[1850, 2100])
 setp_altmax = cg.SetParams(
     area_stat='pass', mask_flag='land', reg_oi='global', rlz='all', 
@@ -86,12 +93,12 @@ setp_altmax = cg.SetParams(
 #      quantile=0.5
 ppar_crossover = cg.PlotParams(
     cb_bool=True, cb_extent='neither', cb_label='crossover year', 
-    cb_vals=[2000, 2050], 
+    cb_vals=[2000, 2050],
     cmap=fpl.crossover_n(n=10), dpi=800, 
     figsize=(5,4), o_bool=True, o_name='', o_path=cmn_path, o_prefix='', 
     plot_crossover_dict=dict(
         forced_dict=dict(bool=True, threshold=(80,)),
-        member_dict=dict(bool=False, threshold=(100,),),),
+        member_dict=dict(bool=False)),
     plot_each_member=False, proj='Arctic', quantile=None, title='', 
     title_size=10)
 #  Plot parameters for image muting based on active layer
@@ -142,7 +149,7 @@ ppar_crossover.o_name = ppar_crossover.o_prefix + ppar_crossover.o_name
 ic(ppar_crossover.o_name, ppar_crossover.title)
 plt.rcParams.update({'font.family': 'Catamaran'})
 #  'font.weight': normal, bold, heavy, light, ultrabold, ultralight
-plt.rcParams.update({'font.weight': 'heavy'})
+plt.rcParams.update({'font.weight': 'normal'})
 plt.rcParams.update({'font.size': 12})
 if paint_shapefile_bool:
     geo_arctic, geo_other = fproc.get_arctic_biomes()

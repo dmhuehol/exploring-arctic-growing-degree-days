@@ -32,10 +32,10 @@ stitch_bool = True
 #     'EurasianTundra/PSL/3yr/min20', 
 #     'Tasiilaq/PSL/3yr/min20',
 #     'UpperQuebec/PSL/3yr/min20')
-cmn_path = '/Users/dhueholt/Documents/gddt_fig/FramesForAnimations/'
+cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/FramesForAnimations/'
 #  No trailing slash on tup_reg
 tup_reg = (
-    'BrooksRangeColonist/SST/10yr/min20',)
+    'BrooksRangeColonist/SST/10yr/max20',)
 tok1 = '*bonGDD*.png'
 tok2 = '*_GDD_*.png'
 #  Substrings of path which are cut to automatically create mp4 filename

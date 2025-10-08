@@ -35,7 +35,8 @@ import puppets
 
 #  type: 'coe_hpc' or 'local'
 dp_gdd, dp_gdd_alltimes, dp_psl, dp_sst, dp_icefrac, cmn_path = fproc.get_params(
-    type='local', cmn_path='')
+    type='local', 
+    cmn_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/compositeanom_max20/')
 ip = cg.IntervalParams(span=10, strt_yr=1850, end_yr=2100, type='rolling')
 setp_gdd = cg.SetParams(
     area_stat='mean', mask_flag='none', reg_oi=g_rlib.BrooksRange_colonist(), 
@@ -46,7 +47,7 @@ setp_psl = cg.SetParams(
 setp_sst = cg.SetParams(
     dims=['time', 'realization'], mask_flag=None, rlz='all', yrs=[1850, 1859], 
     yrs_rel_to=[1850, 1859], z_flag=True)
-gp_gdd = cg.GuideParams(guide_by='mean', composite_key='min20', qoi=0.25)
+gp_gdd = cg.GuideParams(guide_by='mean', composite_key='max20', qoi=0.25)
 ppar_base_composite = cg.PlotParams(
     cb_bool=True, cb_extent='neither', cb_label='auto', 
     cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], cb_vals=[-0.6, 0.6],

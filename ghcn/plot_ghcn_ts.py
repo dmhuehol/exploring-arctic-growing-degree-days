@@ -3,7 +3,7 @@ Plot GHCN station data as a timeseries.
 
 This supports two main modes of operation:
     1) Plot timeseries for all stations matching span and coverage 
-    parameters in a given time period - useful for exploring dataset
+    parameters in a given time period; useful for exploring dataset
     2) Plot the whole record for all station(s) given station ID(s)
 
 Run with default settings, this runs in mode 2) to reproduce the 
@@ -20,7 +20,7 @@ Graduate Research Assistant at Colorado State University
 '''
 import sys
 sys.path.append(
-    "/Users/dhueholt/Documents/Github/" 
+    "/Users/danielhueholt/Documents/GitHub/" 
     + "exploring-arctic-growing-degree-days/")
 
 from icecream import ic
@@ -33,8 +33,8 @@ import fun_calc_var as fcv
 import fun_ghcn as fg
 import fun_plots as fp
 
-d_path = "/Users/dhueholt/Documents/gddt_data/Arctic50N_gt1/"
-sc_f = "~/Documents/ghcn_data/spancov_lists/spancov_Arctic50N_gt1.csv"
+d_path = "/Users/danielhueholt/Documents/Data/gddt_data/Arctic50N_gt1/"
+sc_f = "~/Documents/Data/ghcn_data/spancov_lists/spancov_Arctic50N_gt1.csv"
 scp = cg.SpanCovParams(f=sc_f, por=30, cov_thr=97, cov_type='>')
 #  As written, ip effectively plots whole record for every station
 ip = cg.IntervalParams(span=224, strt_yr=1800, end_yr=2024, type='noverlap')
@@ -46,7 +46,7 @@ plot_require_whole = False
 #  List of station IDs, or 'auto' to plot all available; matches Fig. 5
 stid = ['UKE00105900', 'CA002403206', 'SWE00139842', 'SWE00138226',
         'RSM00021982', 'RSM00024688']
-o_path = '/Users/dhueholt/Documents/gddt_fig/20250312_crossovertimes/'
+o_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/'
 
 df_sc = fg.get_spancov(scp)
 n_st = ic(len(df_sc))

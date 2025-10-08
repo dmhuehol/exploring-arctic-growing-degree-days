@@ -7,6 +7,7 @@ generation of large numbers of output figures.
 from glob import glob
 import sys
 import time
+import warnings
 
 import cftime
 from icecream import ic
@@ -268,6 +269,10 @@ def mp4s(stitch_bool, png_path, tok1, tok2, o_path, o_name):
         for fc, fv in enumerate(glob2):
             stitched = fpl.stitch_images(glob1[fc], fv)
             stitched_path = o_path + '/stitched/'
+            no_doubleslash = stitched_path.replace('//', '/')
+            if no_doubleslash != stitched_path:
+                stitched_path = no_doubleslash
+                warnings.warn("Removing double-slash from stitched_path")
             fname1 = fv.split('/')[-1]
             stitched.save(stitched_path + 'stitched_' + fname1)
         fpl.images_mp4(stitched_path, '*stitched*', o_path, o_name, fps=6)
