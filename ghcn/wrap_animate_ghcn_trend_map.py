@@ -13,7 +13,7 @@ import collections
 from itertools import compress
 import sys
 sys.path.append(
-    "/Users/dhueholt/Documents/Github/" 
+    "/Users/danielhueholt/Documents/GitHub/" 
     + "exploring-arctic-growing-degree-days/")
 import time
 
@@ -28,20 +28,20 @@ import fun_plots as fpl
 import fun_process as fproc
 import gddt_region_library as g_rlib
 
-d_path = "/Users/dhueholt/Documents/gddt_data/Arctic50N_gt1/"
-sc_f = "~/Documents/ghcn_data/spancov_lists/spancov_Arctic50N_gt1.csv"
-scp = cg.SpanCovParams(f=sc_f, por=30, cov_thr=97, cov_type='>')
+d_path = "/Users/danielhueholt/Documents/Data/gddt_data/Arctic50N_gt1/"
+sc_f = "~/Documents/Data/ghcn_data/spancov_lists/spancov_Arctic50N_gt1.csv"
+scp = cg.SpanCovParams(f=sc_f, por=10, cov_thr=97, cov_type='>')
 ip = cg.IntervalParams(
     span=scp.por, strt_yr=1873, end_yr=2022, type='noverlap')
 transform = 'percent_change'
 
 dp_lens2 = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/gdd/lens2/', tok='*arc*.nc',
+    path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/', tok='*arc*.nc',
     var='gdd5_sum', flag_raw_ds=True, flag_raw_da=True, flag_time_slice=True,
     flag_manage_rlz=True, flag_land_mask=False, flag_roi=True)
 setp_lens2 = cg.SetParams(
     area_stat='pass', reg_oi=g_rlib.Arctic50N(), rlz='all')
-animate_only = True
+animate_only = False
 check_dist_bool = True
 #  The three PlotParams instances correspond to layers of the plot:
 #  ppar: base layer, to plot GHCN stations as dots shaded by trend.
@@ -52,37 +52,31 @@ ppar = cg.PlotParams(
     anim_d=dict(frame_tok='total*.png', mp4_path=None, mp4_name=None), 
     anim_flag=False, ax_facecolor='#cccccc', cb_bool=True, cb_extent='neither',
     cb_label='% change', cb_ticks=None, cb_vals=[-20, 20], 
-    cmap=fpl.gdd_trend(), dpi=400, figsize=(7, 6), frame_flag=False, 
-    marker_size=8, o_bool=False, o_name=None, 
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250220_refactoringAndNoAnStory/',
-    o_prefix='', proj='Arctic', title=None, title_size=14)
+    cmap=fpl.gdd_trend(), dpi=400, figsize=(7, 6), frame_flag=True, 
+    marker_size=8, o_bool=False, o_name='', 
+    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251009_spinup/',
+    o_prefix='', proj='Arctic', title='', title_size=14)
 ppar_nan_trends = cg.PlotParams(
     ax_facecolor='#cccccc', cb_bool=False, cb_vals=[-20, 20], color='#ff7b5a',
-    dpi=400, figsize=(7, 6), frame_flag=False, marker='*', marker_size=16, 
+    dpi=400, figsize=(7, 6), frame_flag=True, marker='*', marker_size=16, 
     o_bool=False, o_prefix='emergeonly_', 
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250220_refactoringAndNoAnStory/',
+    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251009_spinup/',
     proj='Arctic')
 ppar_outside_dist = cg.PlotParams(
     alpha=0.65, anim_d=dict(frame_tok='*.png', mp4_path=None, mp4_name=None), 
     anim_flag=True, ax_facecolor='#cccccc', cb_bool=False, cb_vals=[-20, 20], 
     color=None, dpi=400, edgecolors='#000000', figsize=(7, 6), frame_flag=True, 
     marker_size=30, o_bool=True, o_prefix='', 
-    o_path='/Users/dhueholt/Documents/gddt_fig/20250220_refactoringAndNoAnStory/', 
+    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251009_spinup/', 
     proj='Arctic')
 
 nan_trend_count = 0
 for loop_count, interval in enumerate(ip.intervals):
     #  Need basic name information even if frame_flag is False!
     yr_str = str(interval[0]) + '-' + str(interval[1])
-    if check_dist_bool:
-        ppar_outside_dist.o_name = 'GHCN_abv50N_cov' + scp.cov_thr_str \
-            + '_span' + scp.por_str + '_trend' + yr_str
-        ppar_outside_dist.title = 'Trends for GHCN stations above 50N ' \
-            + yr_str + ' cov >97 '
-    else:
-        ppar.o_name = 'GHCN_abv50N_cov' + scp.cov_thr_str + '_span' + scp.por_str \
+    ppar.o_name = 'GHCN_abv50N_cov' + scp.cov_thr_str + '_span' + scp.por_str \
             + '_trend' + yr_str
-        ppar.title = 'Trends for GHCN stations above 50N ' + yr_str + ' cov >97 '
+    ppar.title = 'Trends for GHCN stations above 50N ' + yr_str + ' cov >97 '
     if ppar.frame_flag is False:
         break
     if check_dist_bool:
