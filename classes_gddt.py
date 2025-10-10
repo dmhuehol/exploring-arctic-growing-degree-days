@@ -163,7 +163,7 @@ class IntervalParams:
         '''
         if type == 'noverlap':
             all_strt_yrs = range(strt_yr, end_yr, spn)
-            all_end_yrs = range(strt_yr + spn, end_yr + spn - 1, spn)
+            all_end_yrs = range(strt_yr + spn - 1, end_yr + spn - 1, spn)
         elif type == 'rolling':
             all_strt_yrs = range(strt_yr, end_yr - spn + 1, 1)
             all_end_yrs = range(strt_yr + spn - 1, end_yr, 1)
