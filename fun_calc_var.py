@@ -11,9 +11,9 @@ import numpy as np
 from sklearn import linear_model
 import xarray as xr
 
-    
+
 def calc_crossover(data_exceedance, threshold):
-    ''' Calculate crossover at a given threshold given exceedance 
+    ''' Calculate crossover at a given threshold given exceedance
     data. '''
     if threshold == 100:
         all_crossover = data_exceedance == threshold
@@ -21,7 +21,7 @@ def calc_crossover(data_exceedance, threshold):
         all_crossover = data_exceedance > threshold
     else:
         ic(threshold)
-        raise ValueError('Threshold must be in range [0, 100].') 
+        raise ValueError('Threshold must be in range [0, 100].')
     all_crossover = np.array(all_crossover)
 
     return all_crossover
@@ -36,20 +36,20 @@ def calc_lin_reg(x_data, y_data):
         "intcpt": est.intercept_,
         "data": est.coef_[0] * x_data + est.intercept_,
     }
-    
+
     return temporal_grad
-    
+
 def calc_lin_reg_vec(np_x, da_y):
     ''' Calculate linear regression and retrieve coefficients in a
     vectorized way. This saves massive amounts of time for
     multidimensional data, such as large ensembles.
     Derived from implementation at:
     hrishichandanpurkar.blogspot.com/2017/09/vectorized-functions-for-correlation.html
-    
+
     Arguments:
     np_x -- 1-D numpy array of independent variable
     da_y -- DataArray of dependent variable with 'time' or 'year' dimension
-    
+
     Returns:
     temporal_grad -- dict containing grad and intercept for each rlz
     '''
@@ -61,7 +61,7 @@ def calc_lin_reg_vec(np_x, da_y):
         y_time_stdev = da_y.std(dim='year')
     except ValueError:
         y_time_mn = da_y.mean(dim='time')
-        y_time_stdev = da_y.std(dim='time')       
+        y_time_stdev = da_y.std(dim='time')
     cov = np.sum(
         (np_x - x_time_mn) * (da_y - y_time_mn), axis=0) / (time_entries)
     reg_slp = cov / (x_time_stdev ** 2)
@@ -72,7 +72,8 @@ def calc_lin_reg_vec(np_x, da_y):
     }
 
     return temporal_grad
-    
+
+
 def calc_ransac_reg(x_data, y_data):
     ''' Calculate RANSAC regression and retrieve coefficients '''
     est = linear_model.RANSACRegressor(random_state=13)
@@ -80,9 +81,9 @@ def calc_ransac_reg(x_data, y_data):
     y_rav = y_data.ravel()
     #  Returns model because coefficients are difficult to access
     est.fit(x_2d, y_rav)
-    
+
     return est
-    
+
 # def calc_theilsen_reg(x_data, y_data):
 #     ''' Calculate Theil-Sen regression and retrieve coefficients '''
 #     est = linear_model.TheilSenRegressor(random_state=13)
@@ -93,13 +94,13 @@ def calc_ransac_reg(x_data, y_data):
 #         "grad": clf.coef_[0],
 #         "intcpt": clf.intercept_
 #     }
-    
+
 #     return temporal_grad
 
 def gdd(da_mntemp, gddp):
-    ''' Calculate growing degree days above a base for an input daily 
-    mean temperature DataArray. 
-    
+    ''' Calculate growing degree days above a base for an input daily
+    mean temperature DataArray.
+
     Arguments:
     da_mntemp -- DataArray of daily mean temperature
     gddp -- GddParams instance
@@ -111,11 +112,11 @@ def gdd(da_mntemp, gddp):
     da_gdd = da_daysoi - gddp.base
     gb_gdd = da_gdd.groupby("time.year")
     da_gdd_sum = gb_gdd.sum()
-    
+
     return da_gdd_sum
 
 def ndd(da_mntemp):
-    ''' Count days with NaNs per year for input daily mean temperature 
+    ''' Count days with NaNs per year for input daily mean temperature
     DataArray.
 
     Arguments:
@@ -127,5 +128,5 @@ def ndd(da_mntemp):
     da_nandays = np.isnan(da_mntemp)
     gb_ndd = da_nandays.groupby("time.year")
     da_ndd_sum = gb_ndd.sum()
-    
+
     return da_ndd_sum
