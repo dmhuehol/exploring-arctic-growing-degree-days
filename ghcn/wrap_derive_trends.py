@@ -20,7 +20,7 @@ import gddt_region_library as g_rlib
 
 data_path = "/Users/danielhueholt/Data/gddt_data/Arctic50N_gt1/"
 sc_f = "~/Data/ghcn_data/spancov_lists/spancov_Arctic50N_gt1.csv"
-scp = cg.SpanCovParams(f=sc_f, por=30, cov_thr=97, cov_type=">")
+scp = cg.SpanCovParams(f=sc_f, por=10, cov_thr=97, cov_type=">")
 ip = cg.IntervalParams(
     span=scp.por, strt_yr=1873, end_yr=2022, type="noverlap")
 dp_model = cg.DataParams(
@@ -33,10 +33,9 @@ out_path = '/Users/danielhueholt/Data/gddt_data/trends/'
 out_fn = "hist_GHCN_abv50N_cov" + scp.cov_thr_str + "_span" + scp.por_str \
     + "_trend" + ip.strt_yr_str + ip.end_yr_str + '.csv'
 
-nan_trend_count = 0
 out_columns = pd.Series([
         "interval", "st_id", "lat", "lon", "slope", "percent_change",
-        "intercept", "in_nearest_lens2_dist"])
+        "intercept", "in_nearest_lens2_dist", "nan_trend_bool"])
 l_interval_trends = list()
 for loop_count, interval in enumerate(ip.intervals):
     yr_str = str(interval[0]) + "-" + str(interval[1])
@@ -73,14 +72,15 @@ for loop_count, interval in enumerate(ip.intervals):
             check_in_lens2_dist = fproc.check_in_dist(np_lens2_grad_ll, grad)
             if dict_lr['data'][0] != 0:
                 lr_trnd = dict_lr['data'][-1] - dict_lr['data'][0]
-                percent_change =  lr_trnd / dict_lr['data'][0] * 100
+                percent_change = lr_trnd / dict_lr['data'][0] * 100
+                nan_trend = False
             else:
-                nan_trend_count = nan_trend_count + 1
+                nan_trend = True
                 grad = 100
                 percent_change = 100
             active_st_data = [
                 yr_str, active_st, ll_lat, ll_lon, grad, percent_change,
-                intcpt, check_in_lens2_dist]
+                intcpt, check_in_lens2_dist, nan_trend]
             active_st_df = pd.DataFrame(columns=out_columns)
             active_st_df.loc[0] = active_st_data
             l_station_trends.append(active_st_df)
@@ -88,5 +88,4 @@ for loop_count, interval in enumerate(ip.intervals):
     l_interval_trends.append(df_interval_trend)
 df_all_trend = pd.concat(l_interval_trends)
 df_all_trend.to_csv(out_path + out_fn)
-ic(nan_trend_count)
 ic("Completed!")

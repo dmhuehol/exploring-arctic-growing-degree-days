@@ -184,10 +184,13 @@ class PlotParams:
     __init__: Initiate an instance of the class with attributes
     '''
     def __init__(
-        self, alpha=1, anim_d=dict(frame_tok='', mp4_path=None, mp4_name=None),
+        self, alpha=1.,
+        anim_d=dict(frame_tok='', mp4_path=None, mp4_name=None),
         anim_flag=False, ax_facecolor='#cccccc', bw=None, cb_bool=True,
-        cb_extent='neither', cb_label='', cb_ticks=None, cb_vals='auto',
-        cmap=None, coastline_bool=True, color='', color_r='#cccccc',
+        cb_extent='neither', cb_label='', cb_ticks=None,
+        cb_vals: list | str='auto',
+        cmap=None, coastline_bool=True, color: str | None = '',
+        color_r='#cccccc',
         color_comp='#ff4444', comp_hist_bool=False, comp_label='',
         dpi=400, edgecolors=None, extreme_n=None, figsize=(10, 4),
         frame_flag=False, kde_bool=False, label=None, leg_bool=False,
@@ -215,10 +218,10 @@ class PlotParams:
         xticks='auto', y_label='', y_lim='auto', yticks='auto'):
         ''' Constructor for PlotParams class, containing all possible
         parameters for all plots: animations, histograms, timeseries,
-        maps.
+        maps. Colors are assumed to be hex codes.
 
         Keyword arguments:
-        alpha: alpha for objects (default: 1)
+        alpha: alpha for objects
         anim_d: dict for mp4 animation settings with keys
             frame_tok: tokens for frame images (default: '')
             mp4_path: out mp4 path (default: None, often auto later)
@@ -233,7 +236,7 @@ class PlotParams:
         cb_extent: set pointed colorbar ends (default: 'neither')
         cmap: colormap (default: None)
         coastline_bool: true/false plot coastlines (default: True)
-        color: a single color to be used for plotting (default: '')
+        color: a single color for plotting, usually as a hex code
         color_comp: color for comparison data on hist (default:
             '#ff4444')
         color_rlz: a single color for plotting realizations (default:
@@ -514,7 +517,7 @@ class SpanCovParams:
 
     __init__: Initiate an instance of the class with attributes
     '''
-    def __init__(self, f='', por=None, cov_thr=None, cov_type='>',):
+    def __init__(self, f='', por=int(), cov_thr=None, cov_type='>',):
         ''' Constructor for SpanCovParams class.
         Keyword arguments:
         f: Filename for a spancov csv file

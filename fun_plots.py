@@ -1,6 +1,6 @@
-''' fun_plots 
+''' fun_plots
 Plotting functions designed to take the same basic inputs of data,
-ideally in Numpy array (non-gridded) or xarray DataArray (gridded) 
+ideally in Numpy array (non-gridded) or xarray DataArray (gridded)
 format, and a PlotParams class instance.
 ########################################################################
 Written by Daniel Hueholt
@@ -9,6 +9,7 @@ Graduate Research Assistant at Colorado State University
 from glob import glob
 import os
 import sys
+import warnings
 
 import cartopy.crs as ctcrs
 import cartopy.feature as cfeat
@@ -48,13 +49,13 @@ elif os.path.exists(font_path_coe_hpc):
 ########################################################################
 def plot_globe(da_plot, ppar, ax=None, fig=None):
     ''' Make a globe plot. Derived from DrawOnGlobe in SAI-ESM, originally
-    written by Elizabeth Barnes. Arctic and regional maps adapted from 
+    written by Elizabeth Barnes. Arctic and regional maps adapted from
     code by Ariel Morrison.
-    
+
     Arguments:
     da_plot -- DataArray with data to plot
     ppar -- PlotParams instance
-    
+
     Returns:
     ax -- the active axis object
     Saves PNG figure to path specified in ppar
@@ -74,11 +75,11 @@ def plot_globe(da_plot, ppar, ax=None, fig=None):
     # da_plot = np.nan_to_num(da_plot, nan=-9999)
     # data_cyc, lons_cyc = cutil.add_cyclic_point(da_plot, coord=lons, axis=-1)
     image = ax.pcolormesh(
-                lons, lats, da_plot, transform=d_crs, cmap=ppar.cmap, 
+                lons, lats, da_plot, transform=d_crs, cmap=ppar.cmap,
                 alpha=ppar.alpha)
 ###############################################################################
     # image = ax.pcolormesh(
-    #             lons_cyc, lats, data_cyc, transform=d_crd, cmap=ppar.cmap, 
+    #             lons_cyc, lats, data_cyc, transform=d_crd, cmap=ppar.cmap,
     #             alpha=1)
     if ppar.cb_bool is True:
         cb = plt.colorbar(
@@ -105,13 +106,13 @@ def plot_globe(da_plot, ppar, ax=None, fig=None):
         plt.title(ppar.title)
     if ppar.o_bool:
         plt.savefig(ppar.o_path + ppar.o_name + '.png', dpi=ppar.dpi)
-    
+
     return fig, ax
 
 
 def plot_globe_ng(data_plot, lats, lons, ppar, ax=None):
-    ''' Make a globe plot for non-gridded data. Derived from DrawOnGlobe 
-    in SAI-ESM, originally written by Elizabeth Barnes. Arctic and 
+    ''' Make a globe plot for non-gridded data. Derived from DrawOnGlobe
+    in SAI-ESM, originally written by Elizabeth Barnes. Arctic and
     regional maps adapted from code by Ariel Morrison. '''
     if ax is None:
         fig = plt.figure(figsize=ppar.figsize)
@@ -122,13 +123,13 @@ def plot_globe_ng(data_plot, lats, lons, ppar, ax=None):
 ###############################################################################
     try:
         image = ax.scatter(
-            lons, lats, s=ppar.marker_size, c=data_plot, transform=d_crs, 
-            cmap=ppar.cmap, alpha=ppar.alpha, marker=ppar.marker, 
+            lons, lats, s=ppar.marker_size, c=data_plot, transform=d_crs,
+            cmap=ppar.cmap, alpha=ppar.alpha, marker=ppar.marker,
             edgecolors=ppar.edgecolors, zorder=100)
     except ValueError:
         image = ax.scatter(
-            lons, lats, s=ppar.marker_size, c=ppar.cmap, transform=d_crs, 
-            alpha=ppar.alpha, marker=ppar.marker, edgecolors=ppar.edgecolors, 
+            lons, lats, s=ppar.marker_size, c=ppar.cmap, transform=d_crs,
+            alpha=ppar.alpha, marker=ppar.marker, edgecolors=ppar.edgecolors,
             zorder=100)
     if ppar.color is None:
         image.set_facecolor("none")
@@ -161,7 +162,7 @@ def plot_globe_ng(data_plot, lats, lons, ppar, ax=None):
         plt.title(ppar.title)
     if ppar.o_bool:
         plt.savefig(ppar.o_path + ppar.o_name + '.png', dpi=400)
-    
+
     return ax
 
 def plot_globe_shapefile(geo_plot, geo_noplot, ppar):
@@ -185,8 +186,8 @@ def plot_globe_shapefile(geo_plot, geo_noplot, ppar):
             cb.set_label(ppar.cb_label, size="medium")
     ax.set_title(ppar.title, fontsize=ppar.title_size)
     plt.savefig(ppar.o_path + ppar.o_name + '.png', dpi=ppar.dpi)
-    
-    
+
+
 def plot_hist(lens2_to_plot, comp_to_plot=None, ppar=None):
     ''' Plot histogram of arbitrary LENS2 data and optional comparison data '''
     fig, ax = plt.subplots()
@@ -204,16 +205,16 @@ def plot_hist(lens2_to_plot, comp_to_plot=None, ppar=None):
     for perc, per in enumerate(lens2_to_plot.keys()):
         act_dist = np.ravel(lens2_to_plot[per].data)
         ax = sn.histplot(
-            data=act_dist, label=per, color=colors[perc % 6], 
+            data=act_dist, label=per, color=colors[perc % 6],
             edgecolor=None, stat=ppar.stat, kde=ppar.kde_bool, binwidth=bw)
         if ppar.mn_dict['bool']:
             mn_lens2_areas = np.mean(act_dist)
-            plt.plot([mn_lens2_areas, mn_lens2_areas], [0, 1000], color=colors[perc % 6], 
+            plt.plot([mn_lens2_areas, mn_lens2_areas], [0, 1000], color=colors[perc % 6],
                 linestyle=ppar.linestyle, linewidth=ppar.lw)
     if comp_to_plot is not None:
         if ppar.comp_hist_bool:
             ax = sn.histplot(
-                data=comp_to_plot, label=ppar.comp_label, color=ppar.color_comp, 
+                data=comp_to_plot, label=ppar.comp_label, color=ppar.color_comp,
                 edgecolor=None, stat=ppar.stat, kde=ppar.kde_bool, binwidth=ppar.bw)
         else:
             plt.plot([comp_to_plot, comp_to_plot], [0, 1000], color=ppar.color_comp,
@@ -223,13 +224,13 @@ def plot_hist(lens2_to_plot, comp_to_plot=None, ppar=None):
     # plt.plot([4500, 4500], [0, h], lw=2, color='#f849b6')
     # plt.plot([4750, 4750], [0, h], lw=2, color='#ecac5c')
     # plt.plot([5000, 5000], [0, h], lw=2, color='#830c6f')
-    
+
     plt.annotate(
         "bw: " + str(np.round(bw, 2)), [0.1, 0.9], xytext=[0.13, 0.85],
         xycoords='figure fraction', fontsize=8)
     apply_params_hist(ppar)
     # plt.legend(
-    #     fontsize=8, bbox_to_anchor=(0.9, -0.12), 
+    #     fontsize=8, bbox_to_anchor=(0.9, -0.12),
     #     ncol=len(lens2_to_plot.keys()))
     # plt.tight_layout()
     # if ppar.o_bool:
@@ -237,10 +238,10 @@ def plot_hist(lens2_to_plot, comp_to_plot=None, ppar=None):
     #         plt.savefig(ppar.o_path + ppar.o_name + '.pdf')
     #     else:
     #         plt.savefig(ppar.o_path + ppar.o_name + '.png', dpi=ppar.dpi)
-    
+
     return None
-    
-    
+
+
 def plot_matrix(arr, set_plot):
     ''' Plot a matrix, i.e. of pattern correlations '''
     fig, ax = plt.subplots()
@@ -256,17 +257,17 @@ def plot_matrix(arr, set_plot):
     image.set_clim(set_plot['cb_vals'][0], set_plot['cb_vals'][1])
     plt.title(set_plot["title"], fontsize=11)
     plt.savefig(set_plot['o_path'] + set_plot['o_name'], dpi=400)
-    
+
     return None
 
 def plot_timeseries(to_plt, x_d=None, ppar=None):
     ''' Make a simple timeseries of one variable.
-    
+
     Keyword arguments:
     to_plt -- object to plot, ideally an np array
     x_d -- abscissa data
     ppar -- PlotParams instance
-    
+
     Returns: None at present.
     '''
     if x_d is None:
@@ -283,11 +284,11 @@ def plot_timeseries(to_plt, x_d=None, ppar=None):
     else:
         if ppar.o_flag:
             plt.savefig('auto_out.pdf')
-            
+
     return None
 
 def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
-    ''' Make a timeseries of exceedance with crossover thresholds 
+    ''' Make a timeseries of exceedance with crossover thresholds
     and storylines annotated.
 
     Hand-tuned aesthetics:
@@ -295,10 +296,10 @@ def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
         y-limits of vertical crossover lines
         y-limits of quantile range
         Top and right spines are manually disabled
-    
+
     Arguments:
     to_plt -- object to plot with exceedance data, ideally np array
-    
+
     Keyword arguments:
     x_d -- abscissa data
     ppar -- PlotParams instance
@@ -311,13 +312,13 @@ def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
     #  Plot all members
     if ppar.rlz_dict['bool']:
         plt.plot(
-            x_d, to_plt, color=ppar.rlz_dict['color'], 
+            x_d, to_plt, color=ppar.rlz_dict['color'],
             label=ppar.rlz_dict['label'], linestyle=ppar.rlz_dict['linestyle'],
             lw=ppar.rlz_dict['lw'])
     #  Ensemble mean plotting
     if ppar.mn_dict['bool']:
         plt.plot(
-            x_d, to_plt_mn, color=ppar.mn_dict['color'], 
+            x_d, to_plt_mn, color=ppar.mn_dict['color'],
             label=ppar.mn_dict['label'], linestyle=ppar.mn_dict['linestyle'],
             lw=ppar.mn_dict['lw'])
     #  Forced crossover calculation and plotting
@@ -333,20 +334,20 @@ def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
             forced_dict['threshold']):
             #  Exceedance threshold(s) plotted as horizontal lines
             plt.plot(
-                years_span, [forced_threshold, forced_threshold], 
+                years_span, [forced_threshold, forced_threshold],
                 color=forced_dict['exceed_color'][forced_count],
-                linestyle=forced_dict['exceed_linestyle'][forced_count], 
+                linestyle=forced_dict['exceed_linestyle'][forced_count],
                 lw=forced_dict['exceed_lw'][forced_count])
-            #  Calculate forced crossover, plot as vertical lines, print 
+            #  Calculate forced crossover, plot as vertical lines, print
             #  strings of when this occurs for each requested threshold.
             forced_crossover = fcv.calc_crossover(to_plt_mn, forced_threshold)
             try:
                 forced_crossover_year = x_d[forced_crossover][0]
                 plt.plot(
                     [forced_crossover_year, forced_crossover_year],
-                    [-100, 100], 
-                    alpha=forced_dict['years_alpha'][forced_count], 
-                    color=forced_dict['years_color'][forced_count], 
+                    [-100, 100],
+                    alpha=forced_dict['years_alpha'][forced_count],
+                    color=forced_dict['years_color'][forced_count],
                     label=str(forced_crossover_year),
                     linestyle=forced_dict['years_linestyle'][forced_count],
                     lw=forced_dict['years_lw'][forced_count])
@@ -371,10 +372,10 @@ def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
                 ppar.o_name = 'noan_' + ppar.o_name
             #  Exceedance threshold(s) plotted as horizontal lines
             plt.plot(
-                years_span, [rlz_threshold, rlz_threshold], 
-                alpha=member_dict['exceed_alpha'][rlz_threshold_count], 
+                years_span, [rlz_threshold, rlz_threshold],
+                alpha=member_dict['exceed_alpha'][rlz_threshold_count],
                 color=member_dict['exceed_color'][rlz_threshold_count],
-                linestyle=member_dict['exceed_linestyle'][rlz_threshold_count], 
+                linestyle=member_dict['exceed_linestyle'][rlz_threshold_count],
                 lw=member_dict['exceed_lw'][rlz_threshold_count])
             l_member_crossover = list()
             all_crossover = fcv.calc_crossover(to_plt, rlz_threshold)
@@ -409,19 +410,19 @@ def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
                                     ']','').replace(' ','').replace(',','-')
                     ppar.o_name = story_str + '_' + ppar.o_name
                     plt.plot(
-                        x_d, to_plt_story, 
-                        color=storyline_dict['color'][story_count], 
-                        label=storyline_dict['label'][story_count], 
+                        x_d, to_plt_story,
+                        color=storyline_dict['color'][story_count],
+                        label=storyline_dict['label'][story_count],
                         linestyle=storyline_dict['linestyle'][story_count],
                         lw=storyline_dict['lw'][story_count])
                     plt.plot(
-                        [story_crossover, story_crossover], [-100, 100], 
-                        alpha=member_dict['years_alpha'][rlz_threshold_count], 
-                        color=member_dict['years_color'][rlz_threshold_count], 
+                        [story_crossover, story_crossover], [-100, 100],
+                        alpha=member_dict['years_alpha'][rlz_threshold_count],
+                        color=member_dict['years_color'][rlz_threshold_count],
                         label=str(story_crossover),
                         linestyle=member_dict[
                             'years_linestyle'][rlz_threshold_count],
-                        lw=member_dict['years_lw'][rlz_threshold_count])     
+                        lw=member_dict['years_lw'][rlz_threshold_count])
             except TypeError:
                 #  Do nothing if storyline_dict['select'] is None, False
                 pass
@@ -439,9 +440,9 @@ def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
                     + str(int(quantile_upper))
                 ic(msg_range)
                 plt.fill_between(
-                    [quantile_lower, quantile_upper], [-100, -100], [100, 100], 
+                    [quantile_lower, quantile_upper], [-100, -100], [100, 100],
                     alpha=member_dict['range_dict']['alpha'],
-                    color=member_dict['range_dict']['color'], 
+                    color=member_dict['range_dict']['color'],
                     edgecolor=member_dict['range_dict']['edgecolor'])
     #  Disable spines, apply timeseries parameters
     plt.gcf().axes[0].spines['top'].set_visible(False)
@@ -453,7 +454,7 @@ def plot_exceed_crossover_ts(to_plt, x_d=None, ppar=None):
     else:
         if ppar.o_flag:
             plt.savefig('auto_out.pdf')
-            
+
     return None
 
 def plot_timeseries_spaghetti(to_plot, x_d, ppar):
@@ -464,7 +465,7 @@ def plot_timeseries_spaghetti(to_plot, x_d, ppar):
     to_plt -- object to plot, ideally an np array
     x_d -- abscissa data
     ppar -- PlotParams instance
-    
+
     Returns: None at present.
     '''
     for rlz in to_plot.realization:
@@ -482,9 +483,9 @@ def plot_timeseries_spaghetti(to_plot, x_d, ppar):
         ppar.x_lim = [x_d[0], x_d[-1]]
     #  Applies params AND saves file
     apply_params_ts(ppar=ppar)
-            
+
     return None
-            
+
 def plot_timeseries_spread(da_to_plot, x_data, ppar):
     ''' Make a timeseries of one variable with ensemble variability
     shown as spread. '''
@@ -492,19 +493,22 @@ def plot_timeseries_spread(da_to_plot, x_data, ppar):
     rlz_min = da_to_plot.min(dim='realization', skipna=True)
     rlz_mn = da_to_plot.mean(dim='realization', skipna=True)
     plt.fill_between(
-        x_data, rlz_max.data, rlz_min.data, color=ppar.color_r, 
+        x_data, rlz_max.data, rlz_min.data, color=ppar.color_r,
         alpha=0.2, linewidth=0)
     if ppar.mn_dict['bool']:
         plt.plot(x_data, rlz_mn, linewidth=2, color=ppar.color)
     ppar.o_name = ppar.o_name.replace('ts', 'ts-spread')
     apply_params_ts(ppar=ppar)
-    
+
     return None
-    
-            
+
+
 def images_mp4(
-    frame_path, frame_token, mp4_path, mp4_name, fps=1, w=None, h=None):
+    frame_path, frame_token, mp4_path, mp4_name, fps=1):
     ''' Make an mp4 animation from a folder of images '''
+    writer = None
+    w = None
+
     png_frames = sorted(glob(frame_path + frame_token))
     if not png_frames:
         #  Provide clear error message in this common case
@@ -513,13 +517,21 @@ def images_mp4(
     for png, dur in pngs_dur:
         frame = cv2.imread(png)
         if w is None:
+            #  Runs on first loop iteration
+            if frame is None:
+                raise TypeError("frame is None")
             h, w, _ = frame.shape
-            codec = cv2.VideoWriter_fourcc(*'avc1')
+            codec = cv2.VideoWriter.fourcc(*'avc1')
             writer = cv2.VideoWriter(mp4_path + mp4_name, codec, fps, (w, h))
         for repeat in range(round(dur * 1/fps)):
-            writer.write(frame)
+            np_frame = np.array(frame)
+            if writer is None:
+                raise TypeError("Unable to write frame (writer is None)")
+            writer.write(np_frame)
+    if writer is None:
+        raise TypeError("Unable to write video (writer is None)")
     writer.release()
-    
+
     return None
 
 
@@ -533,11 +545,11 @@ def apply_params_hist(ppar):
     ''' Apply PlotParams for a histogram plot. Specifically, sets the
     title, x-label, y-label, y-limits, y-ticks, legend visibility, and
     saves figure.
-    
+
     Arguments:
     ppar -- PlotParams instance
-    
-    Returns: 
+
+    Returns:
     None value
     Saves PNG or PDF to path specified in PlotParams if o_bool True
     '''
@@ -561,7 +573,7 @@ def apply_params_hist(ppar):
         if 'Failed to convert' in e.__str__():
             plt.yticks()
         else:
-            sys.exit('Unknown error! ' + e.__str__())    
+            sys.exit('Unknown error! ' + e.__str__())
     if ppar.leg_bool:
         plt.legend()
     if ppar.o_bool:
@@ -569,19 +581,19 @@ def apply_params_hist(ppar):
             plt.savefig(ppar.o_path + ppar.o_name + '.pdf')
         else:
             plt.savefig(ppar.o_path + ppar.o_name + '.png', dpi=ppar.dpi)
-    
+
     return None
 
 
 def apply_params_ts(ppar):
     ''' Apply PlotParams for a timeseries plot. Specifically, sets the
     title, x-label, y-label, y-limits, y-ticks, legend visibility, and
-    saves figure. 
-    
+    saves figure.
+
     Arguments:
     ppar -- PlotParams instance
-    
-    Returns: 
+
+    Returns:
     None value
     Saves PNG or PDF to path specified in PlotParams if o_bool True
     '''
@@ -621,20 +633,22 @@ def apply_params_ts(ppar):
             plt.savefig(ppar.o_path + ppar.o_prefix + ppar.o_name + '.pdf')
         else:
             plt.savefig(
-                ppar.o_path + ppar.o_prefix + ppar.o_name + '.png', 
+                ppar.o_path + ppar.o_prefix + ppar.o_name + '.png',
                 dpi=ppar.dpi)
-    
+
     return None
-    
-def movie_maker(ppar, intvls, scp, yr_str):
-    spn_str = str(intvls[0][0]) + str(intvls[-1][1])
+
+def movie_maker(ppar, all_intervals):
+    first_year = str(all_intervals[0].split('-')[0])
+    last_year = str(all_intervals[-1].split('-')[-1])
+    span_str = first_year + '-' + last_year
     ppar.anim_d["mp4_path"] = ppar.o_path
     ppar.anim_d["mp4_name"] = ppar.o_name.replace(
-        yr_str, spn_str + '_yr' + scp.por_str + '.mp4')
+        ppar.o_name.split('_')[-1], span_str) + '.mp4'
     images_mp4(
-        ppar.o_path, ppar.anim_d["frame_tok"], ppar.anim_d["mp4_path"], 
+        ppar.o_path, ppar.anim_d["frame_tok"], ppar.anim_d["mp4_path"],
         ppar.anim_d["mp4_name"])
-        
+
 def mask_region(region):
     ''' Gets mask for region on a lat/lon grid '''
     lats = np.arange(-90, 91, 1)
@@ -675,7 +689,7 @@ def mask_region(region):
         plot_ones[~grid_mask] = np.nan
     except Exception as e:
         ic(e.__str__())
-        pass  
+        pass
     da_plot_ones = xr.DataArray(
         data=plot_ones,
         dims=["lat", "lon"],
@@ -686,7 +700,7 @@ def mask_region(region):
     )
 
     return da_plot_ones
-    
+
 
 def set_proj(fig, ppar):
     ''' Set up projection and gridlines for a map plot '''
@@ -718,21 +732,21 @@ def set_proj(fig, ppar):
                 1, 1, 1, projection=ctcrs.EqualEarth(central_longitude=cen_lon))
     else:
         ax = plt.subplot(1, 1, 1, projection=ppar.proj) #nrow ncol index
-        ax.set_global() 
-    
+        ax.set_global()
+
     return ax
-    
+
 def stitch_images(file1, file2):
-    '''Stitch two images together and display them side by side, with 
+    '''Stitch two images together and display them side by side, with
     the first resized to be the same height as the second. As configured
     for GDDT library, file1 is a composite and file2 is the
     corresponding timeseries.
     Derived from: https://stackoverflow.com/a/34301747
-    
+
     Arguments:
     file1 -- path to first image file
     file2 -- path to second image file
-    
+
     Returns:
     stitched -- Pillow image object with images side by side, resized
     '''
@@ -749,9 +763,9 @@ def stitch_images(file1, file2):
     stitched.paste(im=image2, box=(width1_rs, 0))
 
     return stitched
-    
-    
-    
+
+
+
 ########################################################################
 ####  CUSTOM COLORS
 ########################################################################
@@ -764,7 +778,7 @@ def balance_n(n=9):
     return cmap_balancen
 
 def crossover_n(n=10):
-    ''' n-color discrete diverging palette from cmasher waterlily_r, 
+    ''' n-color discrete diverging palette from cmasher waterlily_r,
     with central values replaced by gray '''
     waterlily_sub_cmap = cmr.get_sub_cmap('cmr.waterlily_r', 0.1, 0.9, N=10)
     waterlilyr_colors = waterlily_sub_cmap.colors
@@ -782,7 +796,7 @@ def crossover_n(n=10):
     # waterlilyr_colors[int(n / 2)] = (255 / 255, 204 / 255, 229 / 255)
     crossover_cmap = mcolors.LinearSegmentedColormap.from_list(
         'crossover_' + str(n), waterlilyr_colors, N=n)
-    
+
     return crossover_cmap
 
 def diff_n(n=9):
@@ -797,19 +811,23 @@ def gdd_trend():
     ''' Custom seaborn diverging palette for GDD trends '''
     gdd_trend_map = sn.diverging_palette(
         273, 129, s=100, l=50, sep=1, as_cmap=True)
-    
+
     return gdd_trend_map
-    
-def rep_color(color='#000000', d=None):
+
+def rep_color(color: str | None = '', d=[]):
     ''' Repeat input color value for size of data '''
+    if color is None:
+        color_msg = "Using default color (black) for NaN trends"
+        warnings.warn(color_msg)
+        color = '#000000'
     tup_color = (color, )
     seq_color = tup_color * len(d)
-    
+
     return seq_color
 
 def rgb_to_hex(rgb):
     return '#%02x%02x%02x' % rgb
-    
+
 def tarn_n(n=9):
     ''' n-color discrete diverging palette from cmocean tarn '''
     d_rgb = cmocean.tools.get_dict(cmocean.cm.tarn, N=n)

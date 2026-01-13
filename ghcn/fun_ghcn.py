@@ -184,6 +184,23 @@ def open_inv(inv_path, inv_name):
     return df_inv
 
 
+def report_in_lens2(df_indist, df_total):
+    ''' Report stations within LENS2. This comes up in several different
+   places so is best as a function, not a separate analysis script.
+   Arguments:
+       df_indist -- DataFrame within distribution
+       df_total -- DataFrame with all data
+    '''
+    num_indist = len(df_indist)
+    num_total = len(df_total.index)
+    percent_indist = round(num_indist / num_total * 100, 2)
+    msg_in_lens2 = str(percent_indist) + '% of obs (' \
+        + str(num_indist) + ' out of ' + str(num_total) + ' stations)' \
+        + ' within distribution of LENS2 in interval: '
+
+    return msg_in_lens2
+
+
 def trend_ghcn(ldf_act, scp, t_slc):
     ''' Calculate trend information for a GHCN station.
     Arguments:
