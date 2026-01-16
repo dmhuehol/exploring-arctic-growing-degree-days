@@ -186,7 +186,7 @@ class PlotParams:
     def __init__(
         self, alpha=1.,
         anim_d=dict(frame_tok='', mp4_path=None, mp4_name=None),
-        anim_flag=False, ax_facecolor='#cccccc', bw=None, cb_bool=True,
+        anim_flag=False, ax_facecolor='#cccccc', bw=int(), cb_bool=True,
         cb_extent='neither', cb_label='', cb_ticks=None,
         cb_vals: list | str='auto',
         cmap=None, coastline_bool=True, color: str | None = '',
@@ -228,7 +228,7 @@ class PlotParams:
             mp4_name: out mp4 name (default: None, often auto later)
         anim_flag: mp4 animation True/False (default: False)
         ax_facecolor: axis facecolor for figure (default: '#cccccc')
-        bw: binwidth for histogram (default: None)
+        bw: binwidth for histogram (default: int())
         cb_bool: true/false plot colorbar (default: True)
         cb_label: label for colorbar (default: '')
         cb_vals: colorbar values or 'auto' (default: 'auto')

@@ -13,7 +13,6 @@ import matplotlib.path as mpth
 import numpy as np
 import time
 import xarray as xr
-import xesmf as xe
 
 import classes_gddt as cg
 xr.set_options(keep_attrs=True)
@@ -28,13 +27,13 @@ def abrv_var(var_str):
     else:
         msg = "Unknown variable name, returning original string: " + var_str
         abv_var = var_str
-    
+
     return abv_var
 
 def apply_mask(in_da, setp):
     ''' Apply land/ocean mask and return DataArray with np.nans used to
     hide masked area.
-    
+
     Arguments:
     in_da -- input DataArray to be masked
     set_d -- SetParams instance with mask_flag and path to mask specified
@@ -60,7 +59,7 @@ def apply_mask(in_da, setp):
     return da_mask_data
 
 # def area_weight_stat(in_da, set_d):
-#     ''' Return area-weighted mean/sum/etc of entire dataset. More 
+#     ''' Return area-weighted mean/sum/etc of entire dataset. More
 #     complex region handling will be addressed elsewhere. '''
 #     lat_wght = np.cos(np.deg2rad(in_da['lat']))
 #     da_wght = in_da.weighted(lat_wght)
@@ -71,18 +70,18 @@ def apply_mask(in_da, setp):
 #     else:
 #         ic("No area-weighted stat applied")
 #         da_stat = in_da
-    
+
 #     return da_stat
 
 def calc_anomaly(da, da_full, setp):
     ''' Calculate anomalies by removing mean. Optionally divide by
     standard deviation to obtain z-score.
-    
+
     Arguments:
     da: DataArray of interest
     da_full: DataArray of base period to remove
     setp: SetParams instance
-    
+
     Returns:
     da_anom: DataArray of anomalies relative to da_full
     '''
@@ -93,17 +92,17 @@ def calc_anomaly(da, da_full, setp):
     if setp.z_flag:
         da_anom = da_anom / da_stdev
         da_anom.attrs['units'] = 'z'
-    
+
     return da_anom
-    
+
 def calc_trend(da):
     ''' Calculate linear trend using polyfit '''
     da_pf = da.polyfit('year', deg=1)
     slope = da_pf.polyfit_coefficients.sel(degree=1)
     da_guide = slope.squeeze()
-    
+
     return da_guide
-    
+
 
 def cliffs_delta(np_x1, np_x2):
     ''' Calculate Cliff's Delta statistic for two samples of realizations. '''
@@ -119,43 +118,43 @@ def cliffs_delta(np_x1, np_x2):
         #  For cliffs of ensemble mean
         n2 = 1
     cliff = (count_x1ltx2 - count_x1gtx2) / (n1 * n2)
-    
+
     return cliff
-    
+
 def common_opener(dp=cg.DataParams(), setp=cg.SetParams()):
     ''' All open functions aggregated into one for ease of use,
     with options to run processing and retain data as requested in
     DataParams instance.
-    
+
     Keyword arguments:
     dp -- DataParams instance
     setp -- SetParams instance
-    
+
     Returns:
     open_d: dict with Datasets and DataArrays flagged in dp
     '''
     open_d = dict(
-        raw_ds=None, raw_da=None, time_slice=None, manage_rlz=None, 
+        raw_ds=None, raw_da=None, time_slice=None, manage_rlz=None,
         land_mask=None, flag_roi=None)
     ds_in = xr.open_mfdataset(
-        dp.path + dp.tok, concat_dim='realization', combine='nested', 
+        dp.path + dp.tok, concat_dim='realization', combine='nested',
         chunks={'time': 10000}, coords='minimal')
     da_in = ds_in[dp.var].squeeze()
     if dp.flag_raw_ds:
         open_d['raw_ds'] = ds_in
     if dp.flag_raw_da:
         open_d['raw_da'] = da_in
-    
+
     da_toi = da_in
     if dp.flag_time_slice:
-        try:  
+        try:
             #  Standard CESM output format
             time_slice = slice(
                 cftime.DatetimeNoLeap(setp.yrs[0], 1, 1, 0, 0, 0, 0),
                 cftime.DatetimeNoLeap(setp.yrs[1], 12, 31, 14, 24, 0, 0)
             )
             da_toi = da_in.sel(time=time_slice)
-        except KeyError:  
+        except KeyError:
             #  Processed growing degree days format
             time_slice = slice(setp.yrs[0], setp.yrs[1])
             da_toi = da_in.sel(year=time_slice)
@@ -165,12 +164,12 @@ def common_opener(dp=cg.DataParams(), setp=cg.SetParams()):
     if dp.flag_manage_rlz:
         da_rlz = manage_rlz(da_toi, setp)
         open_d['manage_rlz'] = da_rlz
-    
+
     da_mask = da_rlz
     if dp.flag_land_mask:
         da_mask = apply_mask(da_rlz, setp)
         open_d['land_mask'] = da_mask
-    
+
     da_roi = da_mask
     if dp.flag_roi:
         da_roi, loc_str, _ = manage_area(da_mask, setp)
@@ -181,13 +180,13 @@ def common_opener(dp=cg.DataParams(), setp=cg.SetParams()):
 
 def common_calc_exceed(
         da_calc_exceed, da_base_period, years_to_calc, ppar, setp):
-    ''' Calculate exceedance and apply moving average. This feels a bit 
+    ''' Calculate exceedance and apply moving average. This feels a bit
     conceptually overloaded--but it's a use case that several scripts
-    need and modularizing it prevents each script from calling a 
+    need and modularizing it prevents each script from calling a
     slightly different implementation of this code!
     '''
     np_base_samples = np.ravel(da_base_period.data)
-    #  Note that "exceedance" is synonymous with Gexc in robustness from 
+    #  Note that "exceedance" is synonymous with Gexc in robustness from
     #  Hueholt et al. 2022. I think the term "exceedance" is clearer here;
     #  in this calculation the subceedance term is not used so there's no
     #  need for nomenclature that includes both.
@@ -213,24 +212,24 @@ def common_calc_exceed(
             l_exceed_rolling_avg.append(moving_average(np_exceed, setp.window))
     else:
         l_exceed_rolling_avg = None
-    
+
     return np_exceed, l_exceed_rolling_avg
 
 def check_in_dist(dist_list, val):
     ''' Check if value is in list. Useful for checking a value against
     a distribution of realizations.
-    
+
     Arguments:
     dist_list -- list distribution, e.g., large ensemble realizations
     val -- value to check against
-    
+
     Returns:
     check_in_dist -- bool of whether val is within dist_list bounds
     '''
     dist_max = max(dist_list)
     dist_min = min(dist_list)
     check_in_dist = (val < dist_max) & (val > dist_min)
-    
+
     return check_in_dist
 
 
@@ -240,7 +239,7 @@ def get_arctic_biomes(
     arctic_biomes = ["Boreal Forests/Taiga", "Tundra", "Rock and Ice"]
     geo_arctic = geo_sf[geo_sf['BIOME_NAME'].isin(arctic_biomes)]
     geo_other = geo_sf[~geo_sf['BIOME_NAME'].isin(arctic_biomes)]
-    
+
     return geo_arctic, geo_other
 
 
@@ -249,24 +248,24 @@ def get_params(type='', cmn_path=''):
     match type:
         case 'local':
             dp_gdd = cg.DataParams(
-                path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/', 
-                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True, 
-                flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True, 
+                path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/',
+                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True,
+                flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True,
                 flag_land_mask=False, flag_roi=True)
             dp_gdd_roi_alltimes = cg.DataParams(
-                path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/', 
-                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=False, 
-                flag_raw_da=False, flag_time_slice=False, 
+                path='/Users/danielhueholt/Documents/Data/gddt_data/gdd/lens2/',
+                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=False,
+                flag_raw_da=False, flag_time_slice=False,
                 flag_manage_rlz=False, flag_land_mask=False, flag_roi=True)
             dp_psl = cg.DataParams(
                 path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/merge_PSL/AMJJAS/',
                 tok='*.nc', var='PSL', flag_raw_ds=True, flag_raw_da=True,
-                flag_time_slice=True, flag_manage_rlz=True, 
+                flag_time_slice=True, flag_manage_rlz=True,
                 flag_land_mask=False, flag_roi=False)
             dp_sst = cg.DataParams(
                 path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/monthly_SST/AMJJAS/',
                 tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True,
-                flag_time_slice=True, flag_manage_rlz=True, 
+                flag_time_slice=True, flag_manage_rlz=True,
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = None
             if cmn_path == '':
@@ -274,51 +273,51 @@ def get_params(type='', cmn_path=''):
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/',
-                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True, 
-                flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True, 
+                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=True,
+                flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True,
                 flag_land_mask=False, flag_roi=True)
             dp_gdd_roi_alltimes = cg.DataParams(
-                path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/', 
-                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=False, 
-                flag_raw_da=False, flag_time_slice=False, 
+                path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/',
+                tok='*arc*.nc', var='gdd5_sum', flag_raw_ds=False,
+                flag_raw_da=False, flag_time_slice=False,
                 flag_manage_rlz=False, flag_land_mask=False, flag_roi=True)
             dp_psl = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/seasonal/AMJJAS/PSL/',
                 tok='*.nc', var='PSL', flag_raw_ds=True, flag_raw_da=True,
-                flag_time_slice=True, flag_manage_rlz=True, 
+                flag_time_slice=True, flag_manage_rlz=True,
                 flag_land_mask=False, flag_roi=False)
             dp_sst = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/seasonal/AMJJAS/SST/',
                 tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True,
-                flag_time_slice=True, flag_manage_rlz=True, 
+                flag_time_slice=True, flag_manage_rlz=True,
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/seasonal/AMJJAS/ICEFRAC/',
                 tok='*.nc', var='ICEFRAC', flag_raw_ds=True, flag_raw_da=True,
-                flag_time_slice=True, flag_manage_rlz=True, 
-                flag_land_mask=False, flag_roi=False)   
+                flag_time_slice=True, flag_manage_rlz=True,
+                flag_land_mask=False, flag_roi=False)
             if cmn_path == '':
                 cmn_path = '/home/dhueholt/gddt_fig/frames/for_manuscript_202502/'
-        
+
     return dp_gdd, dp_gdd_roi_alltimes, dp_psl, dp_sst, dp_icefrac, cmn_path
-            
-            
+
+
 def get_season(da_toi, set_d):
     ''' Obtain a season of interest from a DataArray
-    
+
     Arguments:
     da_toi -- input DataArray for season extraction
     set_d -- set dict containing months of interest
     '''
     raise NotImplementedError("Season management not yet implemented.")
-    
+
     return None
-    
+
 def guide(da_ens, gp):
-    ''' Guide (select indices corresponding to characteristic) an 
-    ensemble DataArray. prep_guide should be run first to prepare the 
+    ''' Guide (select indices corresponding to characteristic) an
+    ensemble DataArray. prep_guide should be run first to prepare the
     DataArray.
-    
+
     Arguments:
     da_ens -- ensemble DataArray, characteristic selected by prep_guide
     gp -- GuideParams object
@@ -327,7 +326,7 @@ def guide(da_ens, gp):
     np_tmn = da_ens.data
     da_max = da_ens.max(dim='realization').data
     da_min = da_ens.min(dim='realization').data
-    ind_sort = np.argsort(np_tmn) 
+    ind_sort = np.argsort(np_tmn)
     np_sort = da_ens.sel(realization=ind_sort)
     allq = np.arange(0, 1 + gp.qoi, gp.qoi)
     ind_q = dict()
@@ -335,7 +334,7 @@ def guide(da_ens, gp):
         q_ind = (np_sort <= np.quantile(np_sort, qv)) \
             & (np_sort >= np.quantile(np_sort, allq[qc-1]))
         ind_q[str(qv)] = ind_sort[q_ind]
-    
+
     ind_positive = ind_sort[da_ens.data[ind_sort] > 0]
     ind_negative = ind_sort[da_ens.data[ind_sort] < 0]
     if "max" in gp.composite_key:
@@ -362,18 +361,18 @@ def guide(da_ens, gp):
     ind_dict["quantiles"] = ind_q
     ind_dict["positive"] = ind_positive
     ind_dict["negative"] = ind_negative
-        
+
     return ind_dict
-    
+
 def manage_area(darr, setp):
     ''' Manage area operations: obtain global, regional, or pointal output.
-    This was copied from SAI-ESM and adapted for style but not all 
-    functionality has been tested. There may be hidden syntax errors. 
-    
+    This was copied from SAI-ESM and adapted for style but not all
+    functionality has been tested. There may be hidden syntax errors.
+
     Arguments:
     darr -- DataArray for area selection
     setp -- SetParams instance
-    
+
     Returns:
     darr: DataArray with selected region
     '''
@@ -392,7 +391,7 @@ def manage_area(darr, setp):
     elif isinstance(setp.reg_oi, dict): #region_library-style objects
         if len(setp.reg_oi['reg_lats']) == 1: # Point region_library object
             darr = darr.sel(
-                lat=setp.reg_oi['reg_lats'], lon=setp.reg_oi['reg_lons'], 
+                lat=setp.reg_oi['reg_lats'], lon=setp.reg_oi['reg_lons'],
                 method="nearest")
             ic(darr['lat'].data, darr['lon'].data) #Lat/lon to check 'nearest'
             darr = np.squeeze(darr) #Drop length 1 lat/lon dimensions
@@ -448,8 +447,8 @@ def manage_area(darr, setp):
         #         darr.isel(realization=rc)[cursedZeros] = np.nan
 
     return darr, loc_str, loc_title
-    
-    
+
+
 def manage_rlz(da_mod, setp):
     ''' Filter realizations based on input 'rlz' property in SetParams
     instance. Valid 'rlz' values are:
@@ -461,11 +460,11 @@ def manage_rlz(da_mod, setp):
         list of integers -- selected members (WARNING: ZERO INDEXED)
     If given a list of members, the realizations are bound to the
     DataArray attributes for easy access.
-    
+
     Arguments:
     da_mod -- Ensemble DataArray or Dataset for filtering
     setp -- SetParams instance, where 'rlz' attribute controls behavior
-    
+
     Returns:
     da_rlzoi -- Filtered DataArray or Dataset
     '''
@@ -481,7 +480,7 @@ def manage_rlz(da_mod, setp):
         da_rlzoi = da_mod
     else:
         ic('Invalid input for rlz!')
-    
+
     return da_rlzoi
 
 def make_polygon_mask(lats, lons, reg_lats, reg_lons):
@@ -491,7 +490,7 @@ def make_polygon_mask(lats, lons, reg_lats, reg_lons):
     flat_lat = np.ravel(grid_lat)
     flat_latlon = np.transpose(np.vstack((flat_lat, flat_lon))) #Nx2
     reg_poly = np.transpose(np.vstack((reg_lats, reg_lons))) #Polyx2
-    
+
     reg_path = mpth.Path(reg_poly) #defines the path of the region
     flat_mask = reg_path.contains_points(flat_latlon) #the heavyweight--calculates whether points from the grid are exterior to the path or not
     grid_mask = flat_mask.reshape((len(lats),len(lons)))
@@ -499,7 +498,7 @@ def make_polygon_mask(lats, lons, reg_lats, reg_lons):
     return grid_mask
 
 def match_rlz_extremes(data_rlz, extreme=''):
-    ''' Match realizations to absolute extremes (e.g., 'max10' or 'min10' 
+    ''' Match realizations to absolute extremes (e.g., 'max10' or 'min10'
     indices) '''
     if 'max' in extreme:
         max_n = int(extreme.replace('max',''))
@@ -511,7 +510,7 @@ def match_rlz_extremes(data_rlz, extreme=''):
         raise ValueError('Invalid entry for extreme!')
     msg_extreme = 'Indices matching ' + extreme + ': ' + str(indices_extreme)
     ic(msg_extreme)
-        
+
     return indices_extreme
 
 
@@ -528,27 +527,27 @@ def match_rlz_quantiles(data_rlz, quantile, type='equal'):
             members_quantile = data_rlz <= np.round(data_quantile)
         elif type == 'geq':
             members_quantile = data_rlz >= np.round(data_quantile)
-        else: 
+        else:
             raise ValueError('Improper value for type input')
         indices_quantile = np.squeeze(np.nonzero(members_quantile))
     msg_quantile = 'Indices matching ' + str(quantile) + ' quantile: ' \
         + str(indices_quantile)
     ic(msg_quantile)
-    
+
     return indices_quantile
-    
+
 def moving_average(x, w):
     ''' From https://stackoverflow.com/a/54628145 '''
     return np.convolve(x, np.ones(w), 'valid') / w
 
 def namer(da_plot, setp):
-    ''' Return info useful for subsequent naming as well as a suggested 
+    ''' Return info useful for subsequent naming as well as a suggested
     filename and title corresponding to input DataArray and set dict.
-    
+
     Arguments:
     da_plot: DataArray of interest
     setp: SetParams instance corresponding to da_plot
-    
+
     Returns:
     name_dict: dict containing bits useful for filenames, titles, etc.
     '''
@@ -592,7 +591,7 @@ def namer(da_plot, setp):
         "reg_str": reg_str,
         "reg_abv": reg_abv,
     }
-    
+
     return name_dict
 
 # def pieces(fname):
@@ -607,21 +606,21 @@ def namer(da_plot, setp):
 #     else:
 #         ex["loc"] = 'global'
 #     if (ex["d_id"] == 'LE2') | (ex["d_id"] == 'LENS2'):
-#         ex["d_long"] = 'LENS2'      
+#         ex["d_long"] = 'LENS2'
 #     if "gdd5_sum" in fname:
 #         ex["var_long"] = 'annual growing degree days'
-    
+
 #     return ex
 
 def prep_guide(da_to_guide, gp):
     ''' Prep DataArray to generate an ensemble guide by obtaining guide
     characteristic and computing the Dask collection (necessary for
     operations in the guide function).
-    
+
     Arguments:
     da_to_guide -- DataArray for guiding with data as Dask collection
     gp -- GuideParams object
-    
+
     Returns:
     da_guide_compute -- computed DataArray of guide characteristic
     '''
@@ -640,14 +639,14 @@ def prep_guide(da_to_guide, gp):
     else:
         ic('Unknown guide_by entry!')
     da_guide_compute = da_guide.compute()
-    
+
     return da_guide_compute
 
 def exceed_subceed(np_x1, np_x2):
-    ''' Calculate exceedance and subceedance (Gexc and Gsub) for two 
+    ''' Calculate exceedance and subceedance (Gexc and Gsub) for two
     samples of realizations. '''
-    #  If the only dimensions are lat/lon. This logic is far from 
-    #  bulletproof, but it's the best I've come up with for now 
+    #  If the only dimensions are lat/lon. This logic is far from
+    #  bulletproof, but it's the best I've come up with for now
     #  without explicit dimension checking using xarray objects.
     if len(np.shape(np_x2)) == 2:
         x1gtx2 = np_x1 > np_x2
@@ -662,7 +661,7 @@ def exceed_subceed(np_x1, np_x2):
     else:
         list_above = list()
         list_below = list()
-        #  Compares each np_x2 element to every np_x1 element. Sadly, I 
+        #  Compares each np_x2 element to every np_x1 element. Sadly, I
         #  have yet to think of a way to do this without a loop!
         for x2c, x2_rlz in enumerate(np_x2):
             # if x2c % 10 == 0:
@@ -677,22 +676,22 @@ def exceed_subceed(np_x1, np_x2):
             "gexc": list_above,
             "gsub": list_below
         }
-    
+
     return dict_g
 
 def roll_window(list_windows):
     ''' Roll list of windows into a DataArray '''
-    da_windows = xr.concat(list_windows, 'window')  
-    
+    da_windows = xr.concat(list_windows, 'window')
+
     return da_windows
 
 def sync_lengths(dict_both, sync_key='', ref_key=''):
-    ''' Repeat values indexed with one key to sync with the length 
-    of values indexed by another key. 
-    
+    ''' Repeat values indexed with one key to sync with the length
+    of values indexed by another key.
+
     Arguments:
     dict_both: dictionary with both sync_key and ref_key
-    
+
     Keyword arguments:
     sync_key: key indexing values to be repeated to ref_key length
     ref_key: keywith intended length
@@ -702,10 +701,10 @@ def sync_lengths(dict_both, sync_key='', ref_key=''):
     '''
     if (len(dict_both[sync_key]) == 1) & (len(dict_both[ref_key]) != 1):
         dict_both[sync_key] = dict_both[sync_key] * len(dict_both[ref_key])
-    
+
     return dict_both
-    
-    
+
+
 def str_yrs(yrs_list):
     ''' Return useful string for titles from input years '''
     try:
@@ -715,11 +714,11 @@ def str_yrs(yrs_list):
             yr_str = str(yrs_list[0]) + '-' + str(yrs_list[1])
     except IndexError:
         yr_str = str(yrs_list[0])
-    
+
     return yr_str
 
 def threshold_count(np_count, beat=None):
     ''' Count above beat number '''
     abv_thresh = np.count_nonzero(np_count > beat, axis=0)
-    
+
     return abv_thresh

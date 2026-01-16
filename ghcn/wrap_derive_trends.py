@@ -2,7 +2,6 @@
 Derive trends and relevant information from GHCN and CESM2 data, and
 save as a new file.
 """
-import collections
 import sys
 sys.path.append(
     "/Users/danielhueholt/Documents/GitHub/" \
@@ -18,6 +17,7 @@ import fun_ghcn as fg
 import fun_process as fproc
 import gddt_region_library as g_rlib
 
+include_model_trends = True
 data_path = "/Users/danielhueholt/Data/gddt_data/Arctic50N_gt1/"
 sc_f = "~/Data/ghcn_data/spancov_lists/spancov_Arctic50N_gt1.csv"
 scp = cg.SpanCovParams(f=sc_f, por=10, cov_thr=97, cov_type=">")
@@ -33,9 +33,15 @@ out_path = '/Users/danielhueholt/Data/gddt_data/trends/'
 out_fn = "hist_GHCN_abv50N_cov" + scp.cov_thr_str + "_span" + scp.por_str \
     + "_trend" + ip.strt_yr_str + ip.end_yr_str + '.csv'
 
-out_columns = pd.Series([
+out_columns = [
         "interval", "st_id", "lat", "lon", "slope", "percent_change",
-        "intercept", "in_nearest_lens2_dist", "nan_trend_bool"])
+        "intercept", "in_nearest_lens2_dist", "nan_trend_bool"]
+if include_model_trends:
+    rlzs = range(100)
+    l_rlzs_str = ['LENS2-' + str(a) for a in rlzs]
+    out_columns = pd.Series(out_columns + l_rlzs_str)
+else:
+    out_columns = pd.Series(out_columns)
 l_interval_trends = list()
 for loop_count, interval in enumerate(ip.intervals):
     yr_str = str(interval[0]) + "-" + str(interval[1])
@@ -81,11 +87,20 @@ for loop_count, interval in enumerate(ip.intervals):
             active_st_data = [
                 yr_str, active_st, ll_lat, ll_lon, grad, percent_change,
                 intcpt, check_in_lens2_dist, nan_trend]
+            if include_model_trends:
+                #  This is horribly inefficient, but I can't immediately
+                #  think of a faster approach since embedding an array
+                #  as an element isn't available in pandas. It doesn't
+                #  run often, so xkcd 1445 applies as well.
+                for r in range(len(np_lens2_grad_ll)):
+                    active_st_data.append(np_lens2_grad_ll[r])
             active_st_df = pd.DataFrame(columns=out_columns)
             active_st_df.loc[0] = active_st_data
             l_station_trends.append(active_st_df)
     df_interval_trend = pd.concat(l_station_trends)
     l_interval_trends.append(df_interval_trend)
 df_all_trend = pd.concat(l_interval_trends)
+if include_model_trends:
+    out_fn = out_fn.replace('.csv', '_withLENS2.csv')
 df_all_trend.to_csv(out_path + out_fn)
 ic("Completed!")
