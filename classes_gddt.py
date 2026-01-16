@@ -1,7 +1,7 @@
 ''' classes_gddt
 Custom classes for exploring-arctic-growing-degree-days package.
 '''
-
+import warnings
 
 
 class DataParams:
@@ -192,8 +192,10 @@ class PlotParams:
         cmap=None, coastline_bool=True, color: str | None = '',
         color_r='#cccccc',
         color_comp='#ff4444', comp_hist_bool=False, comp_label='',
-        dpi=400, edgecolors=None, extreme_n=None, figsize=(10, 4),
-        frame_flag=False, kde_bool=False, label=None, leg_bool=False,
+        dpi: int | str=400, edgecolors=None, extreme_n=None, figsize=(10, 4),
+        font='', frame_flag=False, kde_bool=False, label=None,
+        leg_bool=False,
+        leg_dict=dict(bool=True, frameon=False, text='', size=10),
         linestyle='--', lw=2, marker_size=8, marker='o',
         mn_dict=dict(bool=False, color='', label='', linestyle='--', lw=3),
         o_bool=True, o_name=None, o_path='', o_prefix='',
@@ -215,7 +217,7 @@ class PlotParams:
             select=False, color=[''], label=[''], linestyle=['--'], lw=[0.3,]),
         title=None,
         title_size=14, ts_type='spaghetti', x_label='', x_lim='auto',
-        xticks='auto', y_label='', y_lim='auto', yticks='auto'):
+        xticks='auto', y_label='', y_lim: list | str='auto', yticks='auto'):
         ''' Constructor for PlotParams class, containing all possible
         parameters for all plots: animations, histograms, timeseries,
         maps. Colors are assumed to be hex codes.
@@ -239,7 +241,7 @@ class PlotParams:
         color: a single color for plotting, usually as a hex code
         color_comp: color for comparison data on hist (default:
             '#ff4444')
-        color_rlz: a single color for plotting realizations (default:
+        color_r: a single color for plotting realizations (default:
             '#cccccc')
         comp_hist_bool: plot comparison data on histogram (default:
             False)
@@ -248,11 +250,17 @@ class PlotParams:
         edgecolors: edgecolor for scatterplot (default: None)
         extrem_n: select N most extreme indices (default: None)
         figsize: figure size (default: (10,4))
+        font: name of font
         frame_flag: true/false plot individual frames (default: True)
         kde_bool: true/false kernel density estimate on hist (default:
             False)
         label: label for legend (default: '')
-        leg_bool: true/false to plot legend (default: False)
+        leg_bool: true/false to plot legend [DEPRECATED]
+        leg_dict: dict for legend aesthetics
+            bool: True/False plot legend
+            frameon: True/False legend frame
+            text: message
+            size: font size
         linestyle: line style (default: '--')
         lw: linewidth value (default: 2)
         marker_size: marker size for scatterplot (default: 8)
@@ -400,10 +408,16 @@ class PlotParams:
         self.edgecolors = edgecolors
         self.extreme_n = extreme_n
         self.figsize = figsize
+        self.font = font
         self.frame_flag = frame_flag
         self.kde_bool = kde_bool
         self.label = label
         self.leg_bool = leg_bool
+        if leg_bool:
+            warnings.warn(
+                "DEPRECATIONWARNING: Switch to dictionary syntax for legends",
+                DeprecationWarning)
+        self.leg_dict = leg_dict
         self.linestyle = linestyle
         self.lw = lw
         self.marker_size = marker_size

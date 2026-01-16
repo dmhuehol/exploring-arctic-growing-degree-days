@@ -215,6 +215,26 @@ def common_calc_exceed(
 
     return np_exceed, l_exceed_rolling_avg
 
+def count_threshold(in_data, threshold, type='>', stat=''):
+    ''' Count data points past a threshold, return count or percent '''
+    if type == '>':
+        mask_data = in_data > threshold
+    elif type == '<':
+        mask_data = in_data < threshold
+    else:
+        raise ValueError('type must be ">" or "<"')
+    count_data = np.count_nonzero(mask_data)
+    if stat == 'count':
+        out_stat = count_data
+    elif stat == 'fraction':
+        out_stat = count_data / len(in_data)
+    elif stat == 'percent':
+        out_stat = count_data / len(in_data) * 100
+    else:
+        raise ValueError('stat must be "count", "prob", or "percent"')
+
+    return out_stat
+
 def check_in_dist(dist_list, val):
     ''' Check if value is in list. Useful for checking a value against
     a distribution of realizations.
