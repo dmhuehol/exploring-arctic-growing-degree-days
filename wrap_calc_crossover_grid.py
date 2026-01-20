@@ -1,8 +1,9 @@
 ''' wrap_calc_crossover_grid
-Script to calculate crossover year for a given threshold based on 
+Script to calculate crossover year for a given threshold based on
 exceedance for gridded data and save as a netCDF file. Output file will
 have dimensions lat x lon or rlz x lat x lon.
 '''
+import random
 import sys
 
 from icecream import ic
@@ -13,10 +14,11 @@ import fun_calc_var as fcv
 import fun_process as fproc
 import classes_gddt as cg
 
+random_select = 10
 dp_exceed = cg.DataParams(
-    path='/Users/dhueholt/Documents/gddt_data/LENS2/exceedance/', 
-    tok='gexc_1850-2100_base0-2000.nc', var='exceedance', 
-    flag_raw_ds=True, flag_raw_da=True, flag_time_slice=True, 
+    path='/Users/danielhueholt/data/gddt_data/LENS2/exceedance/',
+    tok='forcingsmoothed_gexc_1850-2100_base0-2000.nc', var='exceedance',
+    flag_raw_ds=True, flag_raw_da=True, flag_time_slice=True,
     flag_manage_rlz=True, flag_land_mask=True, flag_roi=False)
 setp_exceed = cg.SetParams(
     area_stat='pass', base_yrs=[0, 2000], mask_flag='none', reg_oi='global',
@@ -31,16 +33,24 @@ setp_exceed = cg.SetParams(
 #      forced_dict=dict(bool=False, )
 #      member_dict=dict(bool=True, threshold=(100,))
 ppar_crossover = cg.PlotParams(
-    o_bool=True, o_name='', 
-    o_path='/Users/dhueholt/Documents/gddt_data/LENS2/exceedance/crossover/', 
-    o_prefix='', 
+    o_bool=True, o_name='',
+    o_path='/Users/danielhueholt/data/gddt_data/LENS2/exceedance/crossover/',
+    o_prefix='',
     plot_crossover_dict=dict(
         forced_dict=dict(bool=True, threshold=(80,)),
         member_dict=dict(bool=False, threshold=(100,),),),)
+assert ppar_crossover.o_path is not None
+assert ppar_crossover.o_prefix is not None
+assert ppar_crossover.o_name is not None
 
 exceed_dict = fproc.common_opener(dp=dp_exceed, setp=setp_exceed)
 da_exceed = exceed_dict["manage_rlz"].compute()
 out_attrs = da_exceed.attrs
+if random_select is not False:
+    random_members = random.sample(range(50), random_select)
+    da_exceed = da_exceed.isel(realization=random_members)
+    out_attrs["members"] = random_members
+    ppar_crossover.o_prefix = 'rs10-smoothed_'
 if np.max(da_exceed.data) > 100:
     out_attrs['length_of_base_period'] = exceed_dict[
         'raw_ds'].length_of_base_period
@@ -65,7 +75,7 @@ elif ppar_crossover.plot_crossover_dict['forced_dict']['bool']:
 else:
     raise ValueError('Either member or forced crossover must be True')
 
-#  Reversing years for loop ensures the result is the first year beyond 
+#  Reversing years for loop ensures the result is the first year beyond
 #  the threshold (crossover).
 reverse_years = np.flip(years)
 list_crossover_rlz = list()
@@ -112,7 +122,7 @@ try:
             "realization": rlzs,
             "lat": lat,
             "lon": lon},
-        attrs = out_attrs,    
+        attrs = out_attrs,
     )
 #  If no realization dimension
 except ValueError:
@@ -121,12 +131,13 @@ except ValueError:
         coords = {
             "lat": lat,
             "lon": lon},
-        attrs = out_attrs,    
+        attrs = out_attrs,
     )
 
 if ppar_crossover.o_bool:
-    ic(ds_crossover, ppar_crossover.o_path + ppar_crossover.o_name)
-    ds_crossover.to_netcdf(
-        ppar_crossover.o_path + ppar_crossover.o_name + '.nc')
+    out_name_full = ppar_crossover.o_path + ppar_crossover.o_prefix \
+        + ppar_crossover.o_name
+    ic(ds_crossover, out_name_full)
+    ds_crossover.to_netcdf(out_name_full + '.nc')
 else:
     ic('No data saved')

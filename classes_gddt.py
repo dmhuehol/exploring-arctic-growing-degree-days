@@ -195,10 +195,11 @@ class PlotParams:
         dpi: int | str=400, edgecolors=None, extreme_n=None, figsize=(10, 4),
         font='', frame_flag=False, kde_bool=False, label=None,
         leg_bool=False,
-        leg_dict=dict(bool=True, frameon=False, text='', size=10),
+        leg_dict=dict(bool=True, frameon=False, loc='best', text='', size=10),
         linestyle='--', lw=2, marker_size=8, marker='o',
         mn_dict=dict(bool=False, color='', label='', linestyle='--', lw=3),
-        o_bool=True, o_name=None, o_path='', o_prefix='',
+        o_bool=True, o_name: str | None=None, o_path: str | None='',
+        o_prefix: str | None='',
         plot_as_percent=False, plot_crossover_dict=dict(
             forced_dict=dict(
                 bool=False, threshold=(), exceed_color=(), exceed_linestyle=(),
@@ -259,6 +260,7 @@ class PlotParams:
         leg_dict: dict for legend aesthetics
             bool: True/False plot legend
             frameon: True/False legend frame
+            loc: legend location, expects string
             text: message
             size: font size
         linestyle: line style (default: '--')

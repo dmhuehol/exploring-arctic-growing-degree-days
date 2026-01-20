@@ -33,7 +33,7 @@ threshold_stat = 'prob'
 x_max_mag = 35 # 160 for 10-year, 35 for 30-year
 ppar = cg.PlotParams(
     bw=5, color_comp='#6f8c31', color_r='#4e318c', dpi='.pdf', figsize=(7, 7),
-    font='Catamaran', leg_dict={"bool": True, "frameon": True, "size": 22},
+    font='Catamaran', leg_dict={"bool": True, "frameon": False, "size": 22},
     o_name=data_fn.replace('.csv', ''),
     o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260116_cont/',
     o_prefix='', title='Histogram of all trends', y_lim=[0, 0.007])
@@ -59,7 +59,8 @@ sn_hist_lens2 = sn.histplot(
     x=np_ravel_trends_lens2, binwidth=ppar.bw, color=ppar.color_r,
     stat='probability', label='LENS2', alpha=0.5)
 if ppar.leg_dict["bool"]:
-    plt.legend(fontsize=ppar.leg_dict["size"], frameon=False)
+    plt.legend(
+        fontsize=ppar.leg_dict["size"], frameon=ppar.leg_dict["frameon"])
 if threshold is not None:
     if threshold > 0:
         ppar.o_prefix += 'high-extreme_'

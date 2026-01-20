@@ -97,6 +97,19 @@ def calc_ransac_reg(x_data, y_data):
 
 #     return temporal_grad
 
+def check_stats(in_data):
+    ''' Print common statistics for flat input variable '''
+    stats_dict = {
+        "mean": np.nanmean(in_data),
+        "max": np.nanmax(in_data),
+        "min": np.nanmin(in_data),
+        "median": np.nanmedian(in_data, ),
+        "90Q": np.nanquantile(in_data, 0.9),
+        "10Q": np.nanquantile(in_data, 0.1),
+    }
+    ic(stats_dict)
+    return None
+
 def gdd(da_mntemp, gddp):
     ''' Calculate growing degree days above a base for an input daily
     mean temperature DataArray.
