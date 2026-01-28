@@ -57,8 +57,6 @@ for sample in np.arange(1, n_samples + 1):
         mask_flag='land', reg_oi='global', rlz='all', yrs=[1850, 2100])
     crossover_dict_cmip6 = fproc.common_opener(dp=dp_crossover_cmip6, setp=setp_crossover)
     crossover_dict_smoothed = fproc.common_opener(dp=dp_crossover_smoothed, setp=setp_crossover)
-    ic(crossover_dict_cmip6)
-    sys.exit('STOP')
     l_cmip6.append(crossover_dict_cmip6['land_mask'].compute())
     l_smoothed.append(crossover_dict_smoothed['land_mask'].compute())
 for sample in range(n_samples):

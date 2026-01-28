@@ -14,10 +14,10 @@ import fun_calc_var as fcv
 import fun_process as fproc
 import classes_gddt as cg
 
-random_select = 10
+random_select = False
 dp_exceed = cg.DataParams(
     path='/Users/danielhueholt/data/gddt_data/LENS2/exceedance/',
-    tok='forcingsmoothed_gexc_1850-2100_base0-2000.nc', var='exceedance',
+    tok='allmembers_gexc_1850-2100_base0-2000.nc', var='exceedance',
     flag_raw_ds=True, flag_raw_da=True, flag_time_slice=True,
     flag_manage_rlz=True, flag_land_mask=True, flag_roi=False)
 setp_exceed = cg.SetParams(
@@ -37,7 +37,7 @@ ppar_crossover = cg.PlotParams(
     o_path='/Users/danielhueholt/data/gddt_data/LENS2/exceedance/crossover/',
     o_prefix='',
     plot_crossover_dict=dict(
-        forced_dict=dict(bool=True, threshold=(80,)),
+        forced_dict=dict(bool=True, threshold=(90,)),
         member_dict=dict(bool=False, threshold=(100,),),),)
 assert ppar_crossover.o_path is not None
 assert ppar_crossover.o_prefix is not None
@@ -79,6 +79,7 @@ else:
 #  the threshold (crossover).
 reverse_years = np.flip(years)
 list_crossover_rlz = list()
+bmb_type = dp_exceed.tok.split('_')[0]
 for year_count, year in enumerate(reverse_years):
     if ppar_crossover.plot_crossover_dict['forced_dict']['bool']:
         loop_gexc = da_rolling.sel(year=year).mean(dim='realization')
@@ -87,7 +88,7 @@ for year_count, year in enumerate(reverse_years):
                 'forced_dict']['threshold'][0]
             msg_crossover = 'Calculating forced crossover at ' \
                 + str(crossover_threshold) + '% threshold'
-            ppar_crossover.o_name = 'forcedcrossover_' \
+            ppar_crossover.o_name = bmb_type + '_' + 'forcedcrossover_' \
                 + ppar_crossover.o_name + 'threshold' \
                 + str(crossover_threshold)
             out_attrs["threshold"] = crossover_threshold
