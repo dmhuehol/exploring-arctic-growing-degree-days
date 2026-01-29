@@ -5,6 +5,7 @@ have dimensions lat x lon or rlz x lat x lon.
 '''
 import random
 import sys
+import warnings
 
 from icecream import ic
 import numpy as np
@@ -15,9 +16,10 @@ import fun_process as fproc
 import classes_gddt as cg
 
 random_select = False
+bmb_type = 'forcingsmoothed'
 dp_exceed = cg.DataParams(
     path='/Users/danielhueholt/data/gddt_data/LENS2/exceedance/',
-    tok='allmembers_gexc_1850-2100_base0-2000.nc', var='exceedance',
+    tok=bmb_type + '_gexc_1850-2100_base0-2000.nc', var='exceedance',
     flag_raw_ds=True, flag_raw_da=True, flag_time_slice=True,
     flag_manage_rlz=True, flag_land_mask=True, flag_roi=False)
 setp_exceed = cg.SetParams(
@@ -37,8 +39,8 @@ ppar_crossover = cg.PlotParams(
     o_path='/Users/danielhueholt/data/gddt_data/LENS2/exceedance/crossover/',
     o_prefix='',
     plot_crossover_dict=dict(
-        forced_dict=dict(bool=True, threshold=(90,)),
-        member_dict=dict(bool=False, threshold=(100,),),),)
+        forced_dict=dict(bool=False,),
+        member_dict=dict(bool=True, threshold=(100,),),),)
 assert ppar_crossover.o_path is not None
 assert ppar_crossover.o_prefix is not None
 assert ppar_crossover.o_name is not None
@@ -79,7 +81,6 @@ else:
 #  the threshold (crossover).
 reverse_years = np.flip(years)
 list_crossover_rlz = list()
-bmb_type = dp_exceed.tok.split('_')[0]
 for year_count, year in enumerate(reverse_years):
     if ppar_crossover.plot_crossover_dict['forced_dict']['bool']:
         loop_gexc = da_rolling.sel(year=year).mean(dim='realization')
@@ -102,7 +103,7 @@ for year_count, year in enumerate(reverse_years):
                 'member_dict']['threshold'][0]
             msg_crossover = 'Plotting member crossover at ' \
                 + str(crossover_threshold) + '% threshold'
-            ppar_crossover.o_name = 'membercrossover_' \
+            ppar_crossover.o_name = bmb_type + '_' + 'membercrossover_' \
                 + ppar_crossover.o_name + 'threshold' \
                 + str(crossover_threshold)
             out_attrs["threshold"] = crossover_threshold
@@ -111,7 +112,7 @@ for year_count, year in enumerate(reverse_years):
         loop_gexc = da_rolling.sel(year=year)
         crossover = fcv.calc_crossover(loop_gexc, crossover_threshold)
     else:
-        ic('Warning: Unknown crossover setting (check output)')
+        warnings.warn('Unknown crossover setting (check output)')
     np_crossover[crossover] = year
 out_attrs["units"] = 'year'
 #  Assume that data has realization dimension

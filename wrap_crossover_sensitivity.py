@@ -1,6 +1,6 @@
-'''wrap_crossover_sensitivity
+"""wrap_crossover_sensitivity
 Plot sensitivity of crossover to the choice of threshold value.
-'''
+"""
 import sys
 
 import cmasher as cmr
@@ -16,13 +16,14 @@ import fun_process as fproc
 import gddt_region_library as g_rlib
 
 def sensitivity_map(bmb_type, delta, cmn_path, paint_shapefile_bool):
-    ''' Plot sensitivity map
-    Inputs
+    """ Plot sensitivity map
+    Arguments:
     bmb_type -- string of biomass burning filename to use
+        Valid: "forcingcmip6", "forcingsmoothed", "allmembers"
     delta -- delta value to perturb from 80 for sensitivity test
     cmn_path -- output path for maps
-    paint_shapefil_bool -- plot ecoregion shapefile or raw output
-    '''
+    paint_shapefile_bool -- plot ecoregion shapefile or raw output
+    """
     dp_crossover_max = cg.DataParams(
         path='/Users/danielhueholt/Data/gddt_data/LENS2/exceedance/crossover/',
         tok=bmb_type + '_forcedcrossover_threshold' + str(80 + delta) + '.nc',
@@ -39,9 +40,6 @@ def sensitivity_map(bmb_type, delta, cmn_path, paint_shapefile_bool):
         area_stat='pass', base_yrs=[0, 2000],
         mask='/Users/danielhueholt/Data/gddt_data/mask/cesm_atm_mask.nc',
         mask_flag='land', reg_oi='global', rlz='all', yrs=[1850, 2100])
-    setp_altmax = cg.SetParams(
-        area_stat='pass', mask_flag='land', reg_oi='global', rlz='all',
-        yrs=[1850, 2100])
     #  Plot parameters for base layer (crossover year)
     #  Control which kind of crossover is plotted by using forced_dict and
     #  member_dict within ppar_crossover
@@ -160,16 +158,17 @@ def sensitivity_map(bmb_type, delta, cmn_path, paint_shapefile_bool):
         plot_this = da_sensitivity
         fig, ax = fpl.plot_globe(plot_this, ppar_crossover)
 
+def test_sensitivity():
+    """ Make sensitivity test figures for manuscript """
+    cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260128_crossover/'
+    l_paint_shapefile_bool = [True, False]
+    #  Crossover information calculated from wrap_calc_exceedance_grid
+    #  followed by wrap_calc_crossover_grid
+    #  DataParams for forced crossover at 80% threshold
+    l_bmb_type = ['forcingcmip6', 'forcingsmoothed', 'allmembers']
+    l_delta = [1, 5, 10]
 
-cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260128_crossover/'
-l_paint_shapefile_bool = [True, False]
-#  Crossover information calculated from wrap_calc_exceedance_grid
-#  followed by wrap_calc_crossover_grid
-#  DataParams for forced crossover at 80% threshold
-l_bmb_type = ['forcingcmip6', 'forcingsmoothed', 'allmembers']
-l_delta = [1, 5, 10]
-
-for delta in l_delta:
-    for bmb_type in l_bmb_type:
-        for paint_shapefile_bool in l_paint_shapefile_bool:
-            sensitivity_map(bmb_type, delta, cmn_path, paint_shapefile_bool)
+    for delta in l_delta:
+        for bmb_type in l_bmb_type:
+            for paint_shapefile_bool in l_paint_shapefile_bool:
+                sensitivity_map(bmb_type, delta, cmn_path, paint_shapefile_bool)
