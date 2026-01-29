@@ -16,7 +16,8 @@ It also supports derivation of growing degree days (GDD) from observations the G
 The `pixi.toml` file documents necessary packages for this repository. Because OpenCV is used in this environment, **`conda` cannot be reliably used as the package manager** and packages should be installed using another method.
 
 ## Replicating figures in Hueholt et al. 2025
-To be added.
+### Sensitivity test
+From `wrap_crossover_sensitivity`, run the `test_sensitivity` function to generate sensitivity tests for crossover maps around 80% with perturbations of 1 percentage point, 5 percentage points, and 10 percentage points.
 
 ## Workflow to create GDD datasets
 ### GHCN
