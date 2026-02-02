@@ -4,6 +4,7 @@ Functions to assist in various processing tasks.
 Written by Daniel Hueholt
 Graduate Research Assistant at Colorado State University
 '''
+import glob
 import sys
 
 import cftime
@@ -12,6 +13,7 @@ from icecream import ic
 import matplotlib.path as mpth
 import numpy as np
 import time
+from numpy.ma.core import indices
 import xarray as xr
 
 import classes_gddt as cg
@@ -136,9 +138,14 @@ def common_opener(dp=cg.DataParams(), setp=cg.SetParams()):
     open_d = dict(
         raw_ds=None, raw_da=None, time_slice=None, manage_rlz=None,
         land_mask=None, flag_roi=None)
-    ds_in = xr.open_mfdataset(
-        dp.path + dp.tok, concat_dim='realization', combine='nested',
-        chunks={'time': 10000}, coords='minimal')
+    try:
+        ds_in = xr.open_mfdataset(
+            dp.path + dp.tok, concat_dim='realization', combine='nested',
+            chunks={'time': 10000}, coords='minimal')
+    except TypeError:
+        ds_in = xr.open_mfdataset(
+            dp.tok, concat_dim='realization', combine='nested',
+            chunks={'time': 10000}, coords='minimal')
     da_in = ds_in[dp.var].squeeze()
     if dp.flag_raw_ds:
         open_d['raw_ds'] = ds_in
@@ -263,8 +270,10 @@ def get_arctic_biomes(
     return geo_arctic, geo_other
 
 
-def get_params(type='', cmn_path=''):
+def get_params(type='', bmb_type='allmembers', cmn_path=''):
     ''' Get DataParams and cmn_path information based on location '''
+    error_msg = 'Obsolete but retained (relevant for processing).'
+    raise NotImplementedError(error_msg)
     match type:
         case 'local':
             dp_gdd = cg.DataParams(
@@ -284,12 +293,13 @@ def get_params(type='', cmn_path=''):
                 flag_land_mask=False, flag_roi=False)
             dp_sst = cg.DataParams(
                 path='/Users/danielhueholt/Data/gddt_data/LENS2/monthly_SST/AMJJAS/',
-                tok='*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True,
+                tok=bmb_type + '*.nc', var='SST', flag_raw_ds=True, flag_raw_da=True,
                 flag_time_slice=True, flag_manage_rlz=True,
                 flag_land_mask=False, flag_roi=False)
             dp_icefrac = None
             if cmn_path == '':
-                cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20251008_spinup/'
+                cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/'
+                cmn_path += '20260202_composite-crossover/'
         case 'coe_hpc':
             dp_gdd = cg.DataParams(
                 path='/barnes-engr-scratch1/DATA/CESM2-LE/processed_data/annual/gdd/reproc_20250218/',
@@ -704,6 +714,51 @@ def roll_window(list_windows):
     da_windows = xr.concat(list_windows, 'window')
 
     return da_windows
+
+def ensemble_tokens(path=''):
+    """Returns tokens for the biomass burning sub-ensembles of LENS2.
+    Keyword Arguments:
+    path -- path to merge with tokens, must end in forward slash /
+    """
+    dict_tokens = {
+        "forcingcmip6": [
+            '1001-001', '1021-002', '1041-003', '1061-004', '1081-005',
+            '1101-006', '1121-007', '1141-008', '1161-009', '1181-010',
+            '1231-001', '1231-002', '1231-003', '1231-004', '1231-005',
+            '1231-006', '1231-007', '1231-008', '1231-009', '1231-010',
+            '1251-001', '1251-002', '1251-003', '1251-004', '1251-005',
+            '1251-006', '1251-007', '1251-008', '1251-009', '1251-010',
+            '1281-001', '1281-002', '1281-003', '1281-004', '1281-005',
+            '1281-006', '1281-007', '1281-008', '1281-009', '1281-010',
+            '1301-001', '1301-002', '1301-003', '1301-004', '1301-005',
+            '1301-006', '1301-007', '1301-008', '1301-009', '1301-010',],
+        "forcingsmoothed": [
+            '1011-001', '1031-002', '1051-003', '1071-004', '1091-005',
+            '1111-006', '1131-007', '1151-008', '1171-009', '1191-010',
+            '1231-011', '1231-012', '1231-013', '1231-014', '1231-015',
+            '1231-016', '1231-017', '1231-018', '1231-019', '1231-020',
+            '1251-011', '1251-012', '1251-013', '1251-014', '1251-015',
+            '1251-016', '1251-017', '1251-018', '1251-019', '1251-020',
+            '1281-011', '1281-012', '1281-013', '1281-014', '1281-015',
+            '1281-016', '1281-017', '1281-018', '1281-019', '1281-020',
+            '1301-011', '1301-012', '1301-013', '1301-014', '1301-015',
+            '1301-016', '1301-017', '1301-018', '1301-019', '1301-020',
+        ],
+        "allmembers": '*.nc',
+    }
+    dict_tokens['forcingcmip6_asterisk'] = [
+        '*' + c6 + '*' for c6 in dict_tokens['forcingcmip6']]
+    dict_tokens['forcingcmip6_path'] = [
+        glob.glob(path + c6)[0] for c6 in dict_tokens['forcingcmip6_asterisk']]
+    dict_tokens['forcingsmoothed_asterisk'] = [
+        '*' + sm + '*' for sm in dict_tokens['forcingsmoothed']]
+    dict_tokens['forcingsmoothed_path'] = [
+        glob.glob(
+            path + sm)[0] for sm in dict_tokens['forcingsmoothed_asterisk']]
+    dict_tokens['allmembers_asterisk'] = '*.nc'
+    dict_tokens['allmembers_path'] = path + '*.nc'
+
+    return dict_tokens
 
 def sync_lengths(dict_both, sync_key='', ref_key=''):
     ''' Repeat values indexed with one key to sync with the length

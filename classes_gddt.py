@@ -11,9 +11,9 @@ class DataParams:
      __init__: Initiate an instance of the class with attributes
     '''
     def __init__(
-        self, path='', tok='', var='', flag_raw_ds=None, flag_raw_da=None,
-        flag_time_slice=None, flag_manage_rlz=None, flag_land_mask=None,
-        flag_roi=None):
+        self, path='', tok: list | str='', var='', flag_raw_ds=None,
+        flag_raw_da=None, flag_time_slice=None, flag_manage_rlz=None,
+        flag_land_mask=None, flag_roi=None):
         ''' Constructor for DataParams class containing parameters
         used for locating and opening data.
 

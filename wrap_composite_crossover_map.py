@@ -1,10 +1,10 @@
 '''wrap_composite_crossover_map
-Script to composite and plot anomalies in one field corresponding to 
+Script to composite and plot anomalies in one field corresponding to
 crossover in a guiding variable at a given location.
 
-This requires a pre-calculated gridded file of crossover information 
+This requires a pre-calculated gridded file of crossover information
 with dimensions time, lat, lon (and realizations optional). To make this
-file, run wrap_calc_exceedance_grid followed by 
+file, run wrap_calc_exceedance_grid followed by
 wrap_calc_crossover_grid.
 '''
 import sys
@@ -21,42 +21,50 @@ import fun_plots as fpl
 import fun_process as fproc
 import gddt_region_library as g_rlib
 
+bmb_type = 'forcingsmoothed'
 dp_crossover = cg.DataParams(
-    path='/Users/danielhueholt/Documents/Data/gddt_data/LENS2/exceedance/crossover/', 
-    tok='membercrossover_threshold90.nc', var='crossover', 
-    flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False, 
+    path='/Users/danielhueholt/Data/gddt_data/LENS2/exceedance/crossover/',
+    tok=bmb_type + '_membercrossover_threshold90.nc', var='crossover',
+    flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False,
     flag_manage_rlz=True, flag_land_mask=False, flag_roi=True)
 setp_crossover = cg.SetParams(
     area_stat='pass', base_yrs=[0, 2000], mask_flag='none',
-    reg_oi=g_rlib.BrooksRange_colonist(), rlz='all', window=10, 
+    reg_oi=g_rlib.BrooksRange_colonist(), rlz='all', window=10,
     yrs=[1850, 2100])
-_, _, dp_psl, dp_sst, dp_icefrac, cmn_path = fproc.get_params(
-    type='local', cmn_path='')
+dtok = fproc.ensemble_tokens(
+    path='/Users/danielhueholt/Data/gddt_data/LENS2/monthly_SST/AMJJAS/')
+dp_sst = cg.DataParams(
+    path='', tok=dtok[bmb_type + '_path'], var='SST', flag_raw_ds=True,
+    flag_raw_da=True, flag_time_slice=True, flag_manage_rlz=True,
+    flag_land_mask=False, flag_roi=False)
 dp_composite = dp_sst
 setp_psl = cg.SetParams(
-    dims=['time', 'realization'], mask_flag=None, rlz='all', yrs=[1850, 2100], 
+    dims=['time', 'realization'], mask_flag=None, rlz='all', yrs=[1850, 2100],
     yrs_rel_to=[], z_flag=True)
 setp_sst = cg.SetParams(
-    dims=['time', 'realization'], mask_flag=None, match_type='geq', rlz='all', 
+    dims=['time', 'realization'], mask_flag=None, match_type='geq', rlz='all',
     yrs=[1850, 2100], yrs_rel_to=[], z_flag=True)
 setp_composite = setp_sst
+cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/'
+cmn_path += '20260202_composite-crossover/'
 #  Base layer of composite plot
 ppar_composite_crossover = cg.PlotParams(
-    cb_bool=True, cb_extent='neither', cb_label='z', 
+    cb_bool=True, cb_extent='neither', cb_label='z',
     cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], cb_vals=[-0.6, 0.6],
-    cmap=fpl.balance_n(n=18), dpi=800, extreme_n='min20', figsize=(10, 4), 
-    o_bool=True, o_name='LENS2_crossover', o_path=cmn_path, o_prefix='', 
+    cmap=fpl.balance_n(n=18), dpi=800, extreme_n='min2', figsize=(10, 4),
+    o_bool=True, o_name='LENS2_crossover_' + bmb_type, o_path=cmn_path,
+    o_prefix='',
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
         member_dict=dict(bool=True, threshold=(90,),),),
-    plot_each_member=False, proj='EqualEarth180', quantile=None, title='', 
+    plot_each_member=False, proj='EqualEarth180', quantile=None, title='',
     title_size=10)
 #  Plot region/point of interest for crossover calculation on map
 ppar_region = cg.PlotParams(
-    alpha=0.53, cb_bool=False, cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], 
-    cb_vals=[-0.6, 0.6], cmap=mcm.Greys, color='#000000', dpi=800, 
-    edgecolors='#000000', marker_size=30, o_bool=True, o_path=cmn_path, 
-    o_prefix='', plot_each_member=False, proj='EqualEarth180', set_bad=False, 
+    alpha=0.53, cb_bool=False, cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6],
+    cb_vals=[-0.6, 0.6], cmap=mcm.Greys, color='#000000', dpi=800,
+    edgecolors='#000000', marker_size=30, o_bool=True, o_path=cmn_path,
+    o_prefix='', plot_each_member=False, proj='EqualEarth180', set_bad=False,
     title_size=9)
 
 crossover_dict = fproc.common_opener(dp=dp_crossover, setp=setp_crossover)
@@ -67,7 +75,7 @@ np_crossover = da_crossover_roi.data.compute()
 if (ppar_composite_crossover.quantile is not None) \
     & (ppar_composite_crossover.extreme_n is None):
     indices_to_plot = fproc.match_rlz_quantiles(
-        np_crossover, ppar_composite_crossover.quantile, 
+        np_crossover, ppar_composite_crossover.quantile,
         type=setp_composite.match_type)
     ppar_composite_crossover.o_name += '-quantile' \
         + str(ppar_composite_crossover.quantile).replace('.','') + '_' \
@@ -130,5 +138,5 @@ if ppar_region.o_bool:
                 #  Otherwise it's a point, just plot that point
     else:
         fpl.plot_globe_ng(
-            ppar_region.color, setp_crossover.reg_oi["reg_lats"], 
+            ppar_region.color, setp_crossover.reg_oi["reg_lats"],
             setp_crossover.reg_oi["reg_lons"], ppar_region, ax=ax_composite)

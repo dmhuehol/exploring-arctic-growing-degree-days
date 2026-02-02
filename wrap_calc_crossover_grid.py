@@ -16,7 +16,7 @@ import fun_process as fproc
 import classes_gddt as cg
 
 random_select = False
-bmb_type = 'forcingsmoothed'
+bmb_type = 'forcingcmip6'
 dp_exceed = cg.DataParams(
     path='/Users/danielhueholt/data/gddt_data/LENS2/exceedance/',
     tok=bmb_type + '_gexc_1850-2100_base0-2000.nc', var='exceedance',
@@ -40,7 +40,7 @@ ppar_crossover = cg.PlotParams(
     o_prefix='',
     plot_crossover_dict=dict(
         forced_dict=dict(bool=False,),
-        member_dict=dict(bool=True, threshold=(100,),),),)
+        member_dict=dict(bool=True, threshold=(90,),),),)
 assert ppar_crossover.o_path is not None
 assert ppar_crossover.o_prefix is not None
 assert ppar_crossover.o_name is not None
