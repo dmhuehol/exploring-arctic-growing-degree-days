@@ -21,7 +21,7 @@ import fun_plots as fpl
 import fun_process as fproc
 import gddt_region_library as g_rlib
 
-bmb_type = 'forcingsmoothed'
+bmb_type = 'allmembers'
 dp_crossover = cg.DataParams(
     path='/Users/danielhueholt/Data/gddt_data/LENS2/exceedance/crossover/',
     tok=bmb_type + '_membercrossover_threshold90.nc', var='crossover',
@@ -51,7 +51,7 @@ cmn_path += '20260202_composite-crossover/'
 ppar_composite_crossover = cg.PlotParams(
     cb_bool=True, cb_extent='neither', cb_label='z',
     cb_ticks=[-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], cb_vals=[-0.6, 0.6],
-    cmap=fpl.balance_n(n=18), dpi=800, extreme_n='min2', figsize=(10, 4),
+    cmap=fpl.balance_n(n=18), dpi=800, extreme_n='max20', figsize=(10, 4),
     o_bool=True, o_name='LENS2_crossover_' + bmb_type, o_path=cmn_path,
     o_prefix='',
     plot_crossover_dict=dict(

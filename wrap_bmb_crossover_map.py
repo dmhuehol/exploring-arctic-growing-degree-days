@@ -17,7 +17,7 @@ import fun_calc_var as fcv
 import fun_plots as fpl
 import fun_process as fproc
 
-cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260116_cont/'
+cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260325_nomenclature/'
 dp_crossover_cmip6 = cg.DataParams(
     path='/Users/danielhueholt/Data/gddt_data/LENS2/exceedance/crossover/',
     tok='forcingcmip6_forcedcrossover_threshold80.nc', var='crossover',
@@ -55,7 +55,7 @@ if ppar_crossover.plot_crossover_dict['forced_dict']['bool']:
         + str(crossover_attrs_cmip6['threshold']) + '% threshold'
     ppar_crossover.o_name = 'bmbdifference_forcedcrossover_LENS2_threshold' \
         + str(crossover_attrs_cmip6['threshold'])
-    ppar_crossover.title = 'CMIP6 - Smoothed forced crossover \n (ensemble mean >' \
+    ppar_crossover.title = 'Unsmoothed - Smoothed forced crossover \n (ensemble mean >' \
         + str(crossover_attrs_cmip6['threshold']) + '% of Preindustrial samples)'
 else:
     raise ValueError(

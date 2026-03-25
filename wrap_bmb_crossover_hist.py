@@ -21,7 +21,7 @@ import fun_calc_var as fcv
 import fun_plots as fpl
 import fun_process as fproc
 
-cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260116_cont/'
+cmn_path = '/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260325_nomenclature/'
 l_cmip6 = list()
 l_smoothed = list()
 l_compare_in_cmip6 = list()
@@ -31,9 +31,9 @@ n_samples = 25
 ppar = cg.PlotParams(
     bw=2, color_comp='#6f8c31', color_r='#4e318c', dpi='.pdf', figsize=(7, 7),
     font='Catamaran',
-    leg_dict={"bool": True, "frameon": False, "loc": 'upper left', "size": 18},
+    leg_dict={"bool": True, "frameon": False, "loc": 'upper left', "size": 15},
     o_name='',
-    o_path='/Users/danielhueholt/Documents/Figures/arc-gdd_fig/20260116_cont/',
+    o_path=cmn_path,
     o_prefix='', title='Histogram of all trends', x_lim=[-40, 30])
 use_font = load_google_font(ppar.font, danger_not_verify_ssl=True)
 set_default_font(use_font)
@@ -80,13 +80,13 @@ plt.rcParams.update({'font.weight': 'normal'})
 plt.rcParams.update({'font.size': 12})
 ax.spines[['right', 'top']].set_visible(False)
 sn.histplot(
-    plot_cmip6, binwidth=ppar.bw, label='within CMIP6', color='#f07024',
+    plot_cmip6, binwidth=ppar.bw, label='Within Unsmoothed', color='#f07024',
     alpha=0.5, stat='probability', element='step')
 sn.histplot(
-    plot_smoothed, binwidth=ppar.bw, label='within smoothed', color='#1c542c',
+    plot_smoothed, binwidth=ppar.bw, label='Within Smoothed', color='#1c542c',
     alpha=0.5, stat='probability', element='step')
 sn.histplot(
-    plot_between, binwidth=ppar.bw, label='CMIP6 - smoothed', color='#99d6e5',
+    plot_between, binwidth=ppar.bw, label='Unsmoothed - Smoothed', color='#99d6e5',
     alpha=0.5, stat='probability', element='step')
 if ppar.x_lim != 'auto':
     plt.xlim(ppar.x_lim)
