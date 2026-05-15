@@ -16,8 +16,44 @@ It also supports derivation of growing degree days (GDD) from observations the G
 The `pixi.toml` file documents necessary packages for this repository. Because OpenCV is used in this environment, **`conda` cannot be reliably used as the package manager** and packages should be installed using another method.
 
 ## Replicating figures in Hueholt et al. 2025
-### Sensitivity test
+### Forced crossover (Figure 1)
+From `wrap_crossover_map`, run the `crossover_map` function with input data. Requires gridded file of crossover information obtained from `wrap_calc_exceedance_grid` followed by `wrap_calc_crossover_grid` set to threshold of 80%.
+
+### Exceedance timeseries (Figure 2)
+Run `wrap_crossover_ts`; input parameters to obtain individual figures documented in file.
+
+### Composites (Figure 3)
+Run wrap_composite_crossover_map for composites based on crossover; or wrap_composite_anom_map for composites based on GDD.
+
+### No-analog crossover (Figure 4)
+From `wrap_crossover_map`, run the `crossover_map` function with input data. Requires gridded file of crossover information obtained from `wrap_calc_exceedance_grid` followed by `wrap_calc_crossover_grid` set to threshold of 100%.
+
+### Timeseries from GHCN (Figure 5)
+Run `plot_ghcn_ts` from the `ghcn` subdirectory.
+
+### Forced crossover and no-analog crossover without shapefile (Supplemental Figure 1)
+Same as Figures 1 and 4, but with `paint_shapefile_bool` set to False.
+
+### Sensitivity test (Supplemental Figure 2)
 From `wrap_crossover_sensitivity`, run the `test_sensitivity` function to generate sensitivity tests for crossover maps around 80% with perturbations of 1 percentage point, 5 percentage points, and 10 percentage points.
+
+### Difference between biomass burning subsets (Supplemental Figure 3)
+Run `wrap_bmb_crossover_map`
+
+### Composites from differing biomass burning subsets (Supplemental Figure 4 and 5)
+Same as standard composites, but pointing the data to the "forcing_cmip6" or "forcing_smoothed" directories.
+
+### Histograms comparing LENS2 and GHCN trends (Supplemental Figure 5 and 6)
+Run `wrap_trend_hist` from the `ghcn` subdirectory.
+
+### Tables of trends (Supplemental Table 1 and 2)
+Reported by `wrap_trend_hist` from the `ghcn` subdirectory.
+
+### Animation of composites (Supplemental Video 1 and 2)
+Create individual images with `wrap_multi_composite_map`; animate with `wrap_animate_frames`.
+
+### Animation of station trends with LENS2 context (Supplemental Video 3 and 4)
+Use `wrap_animate_ghcn_trend_map` from the `ghcn` subdirectory.
 
 ## Workflow to create GDD datasets
 ### GHCN
