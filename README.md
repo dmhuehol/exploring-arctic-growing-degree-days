@@ -1,6 +1,6 @@
 # exploring-arctic-growing-degree-days
 This codebase is primarily intended to support reproducibility of the following manuscript:
- * Hueholt, D.M., E.A. Barnes, J.W. Hurrell, D. Lombardozzi, & A. L. Morrison. "Exploring the Influence of Internal Climate Variability and Forced Change on Arctic Greening" *in prep*
+ * [anonymized in peer review] "Exploring the Influence of Internal Climate Variability and Forced Change on Arctic Greening" *submitted*
 
 It also supports derivation of growing degree days (GDD) from observations the Global Historical Climatology Network (GHCN) and basic analysis of this dataset.
 
