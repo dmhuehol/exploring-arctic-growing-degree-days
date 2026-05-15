@@ -49,8 +49,8 @@ import fun_plots as fpl
 import fun_process as fproc
 
 def crossover_map(
-    bmb_type, cmn_path, paint_shapefile_bool, dp_crossover, dp_altmax,
-    setp_crossover, setp_altmax, ppar_crossover, ppar_altmask, ppar_shapefile):
+    bmb_type, cmn_path, paint_shapefile_bool, dp_crossover,
+    setp_crossover, ppar_crossover, ppar_shapefile):
     """ Plot crossover map
     Arguments:
     bmb_type -- string of biomass burning filename to use
@@ -58,11 +58,8 @@ def crossover_map(
     cmn_path -- output path for maps
     paint_shapefile_bool -- plot ecoregion shapefile or raw output
     dp_crossover -- DataParams instance for crossover data
-    dp_altmax -- DataParams instance for altmax data
     setp_crossover -- SetParams instance for crossover data
-    setp_altmax -- SetParams instance for altmax data
     ppar_crossover -- PlotParams instance for crossover data
-    ppar_altmask -- PlotParams instance for active layer mask
     ppar_shapefile -- PlotParams instance for ecoregion shapefile
     """
     crossover_dict = fproc.common_opener(dp=dp_crossover, setp=setp_crossover)
@@ -136,7 +133,7 @@ def crossover_map(
         fig, ax = fpl.plot_globe(plot_this, ppar_crossover)
 
 def make_crossover_map(
-    bmb_type='', cmn_path='20260129_crossoverbmb/',
+    bmb_type='', cmn_path='20260514_finalcheck/',
     paint_shapefile_bool=False):
     """ Make crossover map
     Keyword arguments
@@ -152,20 +149,10 @@ def make_crossover_map(
         tok=bmb_type + '_forcedcrossover_threshold80.nc', var='crossover',
         flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False,
         flag_manage_rlz=True, flag_land_mask=True, flag_roi=True)
-    #  ALTMAX (active layer depth) used to mask bedrock and permafrost.
-    #  This has minimal impact, but it's still useful to note!
-    dp_altmax = cg.DataParams(
-        path='/Users/danielhueholt/Data/gddt_data/LENS2/annual_ALTMAX/',
-        tok='*.nc', var='ALTMAX', flag_raw_ds=False, flag_raw_da=True,
-        flag_time_slice=False, flag_manage_rlz=False, flag_land_mask=False,
-        flag_roi=False)
     setp_crossover = cg.SetParams(
         area_stat='pass', base_yrs=[0, 2000],
         mask='/Users/danielhueholt/Data/gddt_data/mask/cesm_atm_mask.nc',
         mask_flag='land', reg_oi='global', rlz='all', yrs=[1850, 2100])
-    setp_altmax = cg.SetParams(
-        area_stat='pass', mask_flag='land', reg_oi='global', rlz='all',
-        yrs=[1850, 2100])
     ppar_crossover = cg.PlotParams(
         cb_bool=True, cb_extent='neither', cb_label='crossover year',
         cb_vals=[2000, 2050], cmap=fpl.crossover_n(n=10), dpi=800,
@@ -175,20 +162,13 @@ def make_crossover_map(
             member_dict=dict(bool=False)),
         plot_each_member=False, proj='Arctic', quantile=None, title='',
         title_size=10)
-    #  Plot parameters for image muting based on active layer
-    ppar_altmask = cg.PlotParams(
-        alpha=0.6, cb_bool=False, cb_extent='neither', cb_label='auto',
-        cb_vals=[-10, 0], cmap=cm['Greys'], dpi=800, figsize=(5,4),
-        o_bool=True, o_name='', o_path=cmn_path, o_prefix='',
-        plot_each_member=False, proj='Arctic', set_bad=False, title='',
-        title_size=11)
     #  Plot parameters for shapefile. Match cmap here to ppar_crossover
     ppar_shapefile = cg.PlotParams(
         cmap=cmr.get_sub_cmap('cmr.torch_r', 0.15, 0.85, N=10), o_prefix='',
         title='Arctic ecoregions by crossover year', title_size=12)
     crossover_map(
-        bmb_type, cmn_path, paint_shapefile_bool, dp_crossover, dp_altmax,
-        setp_crossover, setp_altmax, ppar_crossover, ppar_altmask, ppar_shapefile)
+        bmb_type, cmn_path, paint_shapefile_bool, dp_crossover,
+        setp_crossover, ppar_crossover, ppar_shapefile)
 
 def make_noanalog_map(
     bmb_type='', cmn_path='20260129_crossoverbmb/',
@@ -207,18 +187,10 @@ def make_noanalog_map(
         tok=bmb_type + '_membercrossover_threshold100.nc', var='crossover',
         flag_raw_ds=True, flag_raw_da=True, flag_time_slice=False,
         flag_manage_rlz=True, flag_land_mask=True, flag_roi=True)
-    dp_altmax = cg.DataParams(
-        path='/Users/danielhueholt/Data/gddt_data/LENS2/annual_ALTMAX/',
-        tok='*.nc', var='ALTMAX', flag_raw_ds=False, flag_raw_da=True,
-        flag_time_slice=False, flag_manage_rlz=False,
-        flag_land_mask=False, flag_roi=False)
     setp_crossover = cg.SetParams(
         area_stat='pass', base_yrs=[0, 2000],
         mask='/Users/danielhueholt/Data/gddt_data/mask/cesm_atm_mask.nc',
         mask_flag='land', reg_oi='global', rlz='all', yrs=[1850, 2100])
-    setp_altmax = cg.SetParams(
-        area_stat='pass', mask_flag='land', reg_oi='global', rlz='all',
-        yrs=[1850, 2100])
     ppar_crossover = cg.PlotParams(
         cb_bool=True, cb_extent='neither', cb_label='crossover year',
         cb_vals=[2050, 2100],
@@ -229,14 +201,9 @@ def make_noanalog_map(
             member_dict=dict(bool=True, threshold=(100,))),
         plot_each_member=False, proj='Arctic', quantile=0.5, title='',
         title_size=10)
-    ppar_altmask = cg.PlotParams(
-        alpha=0.6, cb_bool=False, cb_extent='neither', cb_label='auto',
-        cb_vals=[-10, 0], cmap=cm['Greys'], dpi=800, figsize=(5,4), o_bool=True,
-        o_name='', o_path=cmn_path, o_prefix='', plot_each_member=False,
-        proj='Arctic', set_bad=False, title='', title_size=11)
     ppar_shapefile = cg.PlotParams(
         cmap=cmr.get_sub_cmap('cmr.torch_r', 0.15, 0.85, N=10), o_prefix='',
         title='Arctic ecoregions by crossover year', title_size=12)
     crossover_map(
-        bmb_type, cmn_path, paint_shapefile_bool, dp_crossover, dp_altmax,
-        setp_crossover, setp_altmax, ppar_crossover, ppar_altmask, ppar_shapefile)
+        bmb_type, cmn_path, paint_shapefile_bool, dp_crossover,
+        setp_crossover, ppar_crossover, ppar_shapefile)
